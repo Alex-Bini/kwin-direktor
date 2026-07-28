@@ -37,12 +37,6 @@ For the absolute best, most fluid experience, we highly recommend the following 
 - **Geometry Change Effect**: `Enabled` (Crucial for smooth tile resizing)
 - **Magic Lamp / Scale / Squash**: `Disabled` (These intercept window geometry and break the illusion of seamless tiling)
 
-**Suggested KWin Keybinds (Plasma Settings -> Shortcuts -> KWin):**
-- **Window to Next Screen**: `Meta + Shift + Right`
-- **Window to Previous Screen**: `Meta + Shift + Left`
-- **Switch to Desktop 1-4**: `Meta + 1-4`
-- **Window to Desktop 1-4**: `Meta + Shift + 1-4`
-
 ---
 
 ## 🛠️ Installation
@@ -64,11 +58,23 @@ cd direktor
 
 ## 🎮 Usage
 
-Direktor relies on KGlobalAccel for lightning-fast shortcuts. The default bindings are:
-- `Meta + Space`: Cycle active Layout Engine (Dwindle, Columns, Floating)
-- `Meta + F`: Toggle Floating state for the active window
-- `Meta + Arrow Keys`: Swap window focus
-- `Meta + Shift + Arrow Keys`: Move / Swap windows inside the tile tree
+Direktor relies on KGlobalAccel for lightning-fast shortcuts. Here is the recommended configuration (matching the developer's exact daily-driver setup):
+
+**Direktor Tiling Shortcuts:**
+- **Cycle Layout Engine**: `Meta + /` (Swap between Dwindle, Columns, etc.)
+- **Toggle Floating**: `Meta + F` (Float/Unfloat the active window)
+- **Focus Windows**: `Meta + Arrow Keys` (Move focus across tiles)
+- **Move / Swap Windows**: `Meta + Shift + Arrow Keys` (Shift tiles physically around)
+- **Resize Windows**: `Meta + Ctrl + Arrow Keys` (Expand or shrink tile width and height)
+- **Toggle Dwindle Split**: `Meta + J` (Swap between horizontal/vertical splits)
+- **Toggle Desktop Isolation**: `Meta + \` (Enable/Disable per-desktop layouts)
+- **Hot-Reload Config**: `Meta + Shift + R` (Instantly reload all settings and UI configs)
+
+**Suggested KWin Native Shortcuts (Plasma Settings -> Shortcuts -> KWin):**
+- **Window to Next Screen**: `Meta + Shift + Right`
+- **Window to Previous Screen**: `Meta + Shift + Left`
+- **Switch to Desktop 1-4**: `Meta + 1-4`
+- **Window to Desktop 1-4**: `Meta + Shift + 1-4`
 
 *Want to change the gaps or system settings? Just click the Direktor icon in your system tray!*
 

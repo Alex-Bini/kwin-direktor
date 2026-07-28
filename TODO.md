@@ -32,33 +32,52 @@
 - [x] **Health & Export Shortcut (`Meta+Shift+D`)**: Implement a dedicated shortcut and D-Bus action to dump in-memory diagnostic state and display a live health summary (`"Direktor Health: Active | X Windows Tiled | 0 Errors Logged"`).
 
 ### 4. Debug: Window Retiling Behavior After Layout Switch
-- [ ] **Inspect & Trace Layout Transitions**: Investigate window geometry calculation and tile assignment right when `Meta+Space` (`or D-Bus cycle_layout`) switches the active monitor layout.
-- [ ] **Verify Smooth Positioning**: Ensure windows retile instantaneously without overlap, stale positioning, or skipped frames across multiple screen outputs and virtual desktops.
+- [x] **Inspect & Trace Layout Transitions**: Fixed. Windows retile instantaneously across virtual desktops.
+- [x] **Verify Smooth Positioning**: Fixed.
 
 ### 5. Debug: Floating All Layout Behavior
 - [ ] **Diagnose "All Floating" Layout Issues**: Trace why windows in `All Floating` layout were previously observed sizing down and stacking directly on top of one another ("glued" in place where mouse dragging/moving failed).
 - [ ] **Fix Floating Window Rules & Geometry**: Ensure `All Floating` layout cleanly releases window movement constraints (`and/or restores previous normal window geometry before tiling`), allowing free dragging and resizing anywhere on the screen without snapback.
 
 ### 6. Debug: Gaps and Padding Regressions
-- [x] **Virtual Desktop Padding Loss**: Fixed. (Issue where padding dropped to zero across virtual desktops has been resolved).
-- [x] **Dwindle Layout 3rd Window Gap Loss**: Fixed. (Caused by Dwindle isolating specific padding keys from the global `padding` variable without syncing).
-- [x] **General Gap Instability**: Fixed. (Hot-reloading suffered from a caching bug where KWin's global `options` object ignored `kwinrc` changes. KSharedConfig now properly drops disk cache on reload).
+- [x] **Virtual Desktop Padding Loss**: Fixed. 
+- [x] **Dwindle Layout 3rd Window Gap Loss**: Fixed. 
+- [x] **General Gap Instability**: Fixed. 
+- [x] **Window Shifting Bug**: Fixed.
 
 ---
 
-## ✅ Phase 3: Direktor Tray Applet (`direktor_gui`) — COMPLETED
-- [x] **Native QML Integration**: Built a native PyQt6 applet using `PlasmaComponents3` and `Kirigami` to automatically inherit the user's Klassy/Darkly window decorations, Material You colors, and system transparency.
-- [x] **Real-Time Layout Controls**: Implemented a dashboard connecting UI buttons directly to KWin's layout cycle/floating toggle via `qdbus-qt6` KGlobalAccel shortcuts.
-- [x] **Advanced Gap Management**:
-  - Implemented `Uniform Gaps` (Type 2) vs `Custom Directional Gaps` (Type 1) toggles.
-  - Mirrored all new UI options directly into KWin's native System Settings XML schemas (`config.ui`, `main.xml`).
-- [x] **Debounced Live Config Injection**: Built a `QTimer` wrapper that instantly saves UI slider changes to `kwinrc` while debouncing the heavy `qdbus-qt6 org.kde.KWin /KWin reconfigure` signal by 300ms, preventing KWin stuttering during live dragging.
+## ✅ Phase 3: Direktor Tray Applet Core UI (`direktor_gui`) — COMPLETED
+- [x] **Native QML Integration**: Built a native PyQt6 applet using `PlasmaComponents3` and `Kirigami`.
+- [x] **Real-Time Layout Controls**: Implemented a dashboard connecting UI buttons directly to KGlobalAccel shortcuts.
+- [x] **Advanced Gap Management**: Built Uniform vs Custom Gap modes with instant `kwinrc` syncing.
+- [x] **Debounced Live Config Injection**: Built a `QTimer` wrapper preventing KWin stuttering during live slider dragging.
 
 ---
 
-## 📅 Phase 7: Post-Release Features & Bug Fixes
+## ✅ Phase 4: System Optimizer & Diagnostics — COMPLETED
+- [x] **Plasma Diagnostics Engine**: Built a Python background scanner that dynamically queries `kdeglobals` and `kwinrc` to detect conflicting native KWin effects.
+- [x] **Intelligent UI Feedback**: Designed a 3-tier semantic feedback system (Optimized, Questionable, Conflicting) with Kirigami theme colors.
+- [x] **Contextual Help**: Added native Kirigami tooltips explaining exactly why certain effects (Magic Lamp, Scale, Slow animations) break Wayland tiling.
+- [x] **Auto-Fix DBus Integration**: Implemented dedicated Python slots to dynamically rewrite config values and hot-reload KWin directly from the applet.
+
+---
+
+## ✅ Phase 5: GitHub Release & Documentation — COMPLETED
+- [x] **Repository Generation**: Initialized Git repository, configured `.gitignore`, and tracked all core scripts.
+- [x] **Project Branding**: Generated and integrated a custom ultra-modern neon banner.
+- [x] **Comprehensive README**: Wrote a heavily detailed `README.md` covering architecture, installation, the Python OSD daemon, and exact daily-driver shortcuts.
+
+---
+
+## 📅 Phase 6: Post-Release Features — PLANNED
 - [ ] **Advanced Padding Setup**:
   - **User-Defined Gaps**: Build out advanced UI workflows for granular user-defined gap presets.
-  - **Per-Layout Gaps**: Implement layout-specific gap memory (e.g., Dwindle gets 10px padding, while Niri Columns gets 0px padding) so padding dynamically switches when the active layout changes.
-  - **Auto-Calculated Smart Gaps**: Auto-calculate and suggest the proper padding/gap size based on window screen, system scale, and other factors that might make apps blurry or uncommonly sized and cause issues.
-- [x] **Window Shifting Bug**: Fixed. (Keyboard shortcuts for shifting windows now successfully swap tile positions).
+  - **Per-Layout Gaps**: Implement layout-specific gap memory (e.g., Dwindle gets 10px padding, while Niri Columns gets 0px padding).
+  - **Auto-Calculated Smart Gaps**: Auto-calculate and suggest the mathematically perfect gap size based on screen resolution and UI scaling.
+
+---
+
+## 🐞 Phase 7: Edge-Case Bug Squashing — PLANNED
+- [ ] **Flatpak Geometry Strictness**: Ensure the new 35px Geometry Watchdog perfectly snaps GTK apps under all scaling configurations.
+- [ ] **Floating Layout Constraints**: Fix the "glued window" behavior described in Phase 2 for the 'All Floating' engine.

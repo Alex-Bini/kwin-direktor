@@ -29,6 +29,22 @@ Traditional tiling managers on KDE often fight the compositor, resulting in slug
 
 ---
 
+## ⚙️ Suggested Setup
+
+For the absolute best, most fluid experience, we highly recommend the following native Plasma settings (which can be auto-applied via the Tray Applet's System Optimizer):
+
+- **Global Animation Speed**: `0.5x` (Prevents layout stuttering)
+- **Geometry Change Effect**: `Enabled` (Crucial for smooth tile resizing)
+- **Magic Lamp / Scale / Squash**: `Disabled` (These intercept window geometry and break the illusion of seamless tiling)
+
+**Suggested KWin Keybinds (Plasma Settings -> Shortcuts -> KWin):**
+- **Window to Next Screen**: `Meta + Shift + Right`
+- **Window to Previous Screen**: `Meta + Shift + Left`
+- **Switch to Desktop 1-4**: `Meta + 1-4`
+- **Window to Desktop 1-4**: `Meta + Shift + 1-4`
+
+---
+
 ## 🛠️ Installation
 
 Direktor ships with a zero-friction packaging script that automatically compiles the KWin package, installs the Python OSD daemon, and registers the Tray Applet to your autostart.
@@ -60,6 +76,11 @@ Direktor relies on KGlobalAccel for lightning-fast shortcuts. The default bindin
 
 Curious about what we're building next or how the underlying Watchdog works?
 Check out our [Development Roadmap & TODO (Phase 1-7)](TODO.md).
+
+### 🔮 Upcoming Features
+- **Per-Layout Gap Memory**: Direktor will soon remember layout-specific padding (e.g., Dwindle gets 10px gaps, but Niri Columns automatically switches to 0px gaps).
+- **Auto-Calculated Smart Gaps**: An engine that dynamically calculates and suggests the mathematically perfect gap size based on your screen resolution and scaling factor.
+- **Advanced User-Defined Gaps**: Build out granular custom presets beyond the standard 3-tier gap system.
 
 ## 🗑️ Uninstallation
 

@@ -14,9 +14,9 @@
 
 ## ⚡ Why Direktor?
 
-Traditional tiling managers on KDE often fight the compositor, resulting in sluggish animations, broken geometry, and a rigid experience. 
+Traditional tiling managers on KDE often fight the compositor, resulting in sluggish animations and broken geometry. 
 
-**Direktor** is completely different. By decoupling the architecture into a hyper-lightweight KWin Javascript engine and a background Python companion daemon, Direktor provides a "buttery smooth" tiling experience that perfectly integrates with Plasma 6's native effects, animations, and Wayland architecture.
+**Direktor** provides a "buttery smooth" tiling experience that perfectly integrates with Plasma 6. By decoupling the architecture into a hyper-lightweight KWin Javascript engine and a Python companion daemon, Direktor natively hooks into Plasma's geometry effects instead of fighting them.
 
 ## 🚀 Features
 
@@ -84,9 +84,18 @@ Curious about what we're building next or how the underlying Watchdog works?
 Check out our [Development Roadmap & TODO (Phase 1-7)](TODO.md).
 
 ### 🔮 Upcoming Features
-- **Per-Layout Gap Memory**: Direktor will soon remember layout-specific padding (e.g., Dwindle gets 10px gaps, but Niri Columns automatically switches to 0px gaps).
-- **Auto-Calculated Smart Gaps**: An engine that dynamically calculates and suggests the mathematically perfect gap size based on your screen resolution and scaling factor.
-- **Advanced User-Defined Gaps**: Build out granular custom presets beyond the standard 3-tier gap system.
+- **Rounded Corners & Window Borders**: Bringing native, aesthetic tiling borders to Plasma 6.
+- **Per-Screen Layouts**: Run Dwindle on your ultrawide and Master-Stack on your laptop screen simultaneously.
+- **Per-Virtual Desktop Layouts**: Isolate entirely unique tiling environments and engines on a per-desktop basis.
+- **Per-Layout Gap Memory**: Direktor will automatically remember layout-specific padding.
+- **Auto-Calculated Smart Gaps**: An engine that dynamically calculates the mathematically perfect gap size based on your screen resolution and scaling factor.
+
+## 🙌 Acknowledgments & Inspiration
+
+Direktor wouldn't exist without the incredible groundwork laid by other window managers. Huge thanks to:
+- [Krohnkite (Original)](https://github.com/esjeon/krohnkite) and the [Plasma 6 Fork](https://github.com/anametologin/krohnkite) for pioneering KWin tiling scripting.
+- [Karousel](https://github.com/peterfajdiga/karousel) for its brilliant scrollable tiling approaches.
+- [Hyprland](https://hyprland.org/) and [Niri](https://github.com/YaLTeR/niri) for continually pushing the boundaries of Wayland aesthetics, borders, and buttery smooth window animations.
 
 ## 🗑️ Uninstallation
 

@@ -71,6 +71,11 @@
 ---
 
 ## 📅 Phase 6: Post-Release Features — PLANNED
+- [ ] **Aesthetics & Borders**:
+  - **Rounded Corners & Window Borders**: Bring native, customizable aesthetic tiling borders directly into Plasma 6.
+- [ ] **Advanced Layout State**:
+  - **Per-Screen Layouts**: Independent layout memory for multi-monitor setups (e.g., Dwindle on ultrawide, Columns on laptop).
+  - **Per-Virtual Desktop Layouts**: Isolate entirely unique tiling engines and rules on a per-desktop basis.
 - [ ] **Advanced Padding Setup**:
   - **User-Defined Gaps**: Build out advanced UI workflows for granular user-defined gap presets.
   - **Per-Layout Gaps**: Implement layout-specific gap memory (e.g., Dwindle gets 10px padding, while Niri Columns gets 0px padding).

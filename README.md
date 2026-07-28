@@ -70,6 +70,17 @@ If you decide to return to a vanilla Plasma experience, Direktor leaves zero tra
 
 ---
 
+## 📖 Project Backstory & Disclaimer
+
+**Direktor** is an independent, free, and open-source project born out of pure passion, specific workflow needs, and sheer interest in Wayland and KWin scripting. 
+
+Please note:
+- **Independent Effort**: This is an individual pastime/hobby project and is in no way officially associated with, endorsed by, or affiliated with the KDE project.
+- **AI-Assisted**: Artificial Intelligence was heavily utilized as a pair-programming partner to help design the architecture, write the codebase, and generate the documentation.
+- **Free License**: The entirety of this project is provided under a fully free and open-source license. Feel free to fork, modify, and build upon it!
+
+---
+
 <div align="center">
   <i>Built with ❤️ for the KDE Plasma community.</i>
 </div>

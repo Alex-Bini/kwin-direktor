@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+    <kcfgfile name=""/>
+    <group name="">
+        <!-- Layout Config -->
+        <entry name="defaultLayout" type="String"><default>dwindle</default></entry>
+        <entry name="startFloatingDefault" type="Bool"><default>false</default></entry>
+        <entry name="cycleDwindle" type="Bool"><default>true</default></entry>
+        <entry name="cycleColumns" type="Bool"><default>true</default></entry>
+        <entry name="cycleMaster" type="Bool"><default>true</default></entry>
+        <entry name="cycleFloating" type="Bool"><default>true</default></entry>
+
+        <!-- Global Gaps (3 Tier System) -->
+        <entry name="gapMode" type="Int">
+            <default>0</default>
+        </entry>
+        <entry name="globalPadding" type="Int"><default>8</default></entry>
+        
+        <entry name="simpleOuterGap" type="Int"><default>8</default></entry>
+        <entry name="simpleInnerGap" type="Int"><default>8</default></entry>
+        
+        <entry name="customOuterTop" type="Int"><default>8</default></entry>
+        <entry name="customOuterBottom" type="Int"><default>8</default></entry>
+        <entry name="customOuterLeft" type="Int"><default>8</default></entry>
+        <entry name="customOuterRight" type="Int"><default>8</default></entry>
+        <entry name="customInnerVert" type="Int"><default>8</default></entry>
+        <entry name="customInnerHoriz" type="Int"><default>8</default></entry>
+
+        <!-- Animation & Movement -->
+        <entry name="animationDuration" type="Int"><default>300</default></entry>
+        <entry name="morphingLaunchDelay" type="Int"><default>320</default></entry>
+        <entry name="resizeStep" type="Int"><default>40</default></entry>
+        <entry name="moveStep" type="Int"><default>60</default></entry>
+
+        <!-- Rules -->
+        <entry name="useRegexOverrides" type="Bool"><default>true</default></entry>
+        <entry name="ignoreClasses" type="String"><default>kscreenlocker,sddm,greeter,lockscreen,krunner,yakuake,spectacle,plasmashell,ksmserver,kded5,org.kde.kscreenlocker_greet,org.kde.plasmashell,pavucontrol,org.kde.polkit-kde-authentication-agent-1,org.kde.kdialog,org.kde.direktor.tray</default></entry>
+        <entry name="ignoreTitles" type="String"><default>Desktop — Plasma,Desktop,Screen Locker,Login Screen,Greeter,Open File,Save File,Authentication</default></entry>
+        
+        <!-- Advanced -->
+        <entry name="customShortcuts" type="String"><default></default></entry>
+        <entry name="lastLogSummary" type="String"><default>No logs recorded yet...</default></entry>
+        
+        <!-- Niri Specific -->
+        <entry name="niriScrollingMode" type="Int"><default>0</default></entry>
+        <entry name="niriWidthOne" type="Int"><default>100</default></entry>
+        <entry name="niriWidthTwo" type="Int"><default>50</default></entry>
+        <entry name="niriWidthThree" type="Int"><default>40</default></entry>
+
+        <!-- OSD Service -->
+        <entry name="osdLogging" type="Bool"><default>true</default></entry>
+        <entry name="osdCrashAlerts" type="Bool"><default>true</default></entry>
+        <entry name="osdWatchdog" type="Bool"><default>true</default></entry>
+        <entry name="osdNotificationStyle" type="Int"><default>2</default></entry>
+    </group>
+</kcfg>

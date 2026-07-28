@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""
+direktor-osd: User-session companion service for Direktor KWin Script.
+Provides continuous rotating logs, crash interception, and OSD bridging.
+"""
+
+import subprocess
+import sys
+import re
+import os
+import logging
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+import time
+import configparser
+
+# Regex patterns to monitor in the KWin journal stream
+OSD_PATTERN = re.compile(r"\[INFO\] \[OSD\] (.*)")
+DIREKTOR_LOG_PATTERN = re.compile(r"(\[Direktor.*?\]|\[2026.*?\]|\[INFO\].*?direktor)")
+JS_ERROR_PATTERN = re.compile(r"(TypeError:|ReferenceError:|SyntaxError:|Uncaught exception).*?direktor")
+KWIN_UNLOAD_PATTERN = re.compile(r"Unloading script.*?direktor", re.IGNORECASE)
+
+# Setup continuous rotating file logger (5MB max, 1 backup)
+CONFIG_DIR = Path.home() / ".config" / "direktor"
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_FILE = CONFIG_DIR / "direktor.log"
+
+file_logger = logging.getLogger("DirektorLogger")
+file_logger.setLevel(logging.INFO)
+file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5*1024*1024, backupCount=1)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+file_logger.addHandler(file_handler)
+
+class ConfigCache:
+    def __init__(self):
+        self.last_check = 0
+        self.cache = {}
+        
+    def get(self, key, default=True):
+        now = time.time()
+        if now - self.last_check > 5:
+            self._reload()
+            self.last_check = now
+        return self.cache.get(key, default)
+        
+    def _reload(self):
+        try:
+            config = configparser.ConfigParser(strict=False)
+            config.read(Path.home() / ".config" / "kwinrc")
+            if config.has_section("Script-org.kde.kwin.direktor"):
+                changed = False
+                for k in ["osdLogging", "osdCrashAlerts", "osdWatchdog"]:
+                    val = config.get("Script-org.kde.kwin.direktor", k, fallback="true").lower()
+                    new_val = (val == "true" or val == "1")
+                    if k in self.cache and self.cache[k] != new_val:
+                        changed = True
+                    self.cache[k] = new_val
+                try:
+                    new_style = int(config.get("Script-org.kde.kwin.direktor", "osdNotificationStyle", fallback="2"))
+                    if "osdNotificationStyle" in self.cache and self.cache["osdNotificationStyle"] != new_style:
+                        changed = True
+                    self.cache["osdNotificationStyle"] = new_style
+                except ValueError:
+                    self.cache["osdNotificationStyle"] = 2
+                
+                if changed:
+                    show_osd("✅ Direktor-OSD Active & Settings Applied!")
+        except Exception:
+            pass
+
+kwin_config = ConfigCache()
+
+def show_osd(text: str):
+    """Trigger native Plasma OSD pill and toast based on configuration."""
+    style = kwin_config.get("osdNotificationStyle", 2)
+    
+    # 0 = Plasma OSD Pill, 2 = Both
+    if style in [0, 2]:
+        try:
+            subprocess.run([
+                "qdbus-qt6", "org.kde.plasmashell", "/org/kde/osdService",
+                "org.kde.osdService.showText", "preferences-system-windows", text
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        except Exception:
+            pass
+
+    # 1 = Desktop Toast, 2 = Both
+    if style in [1, 2]:
+        try:
+            subprocess.run([
+                "notify-send", "Direktor", text,
+                "-i", "preferences-system-windows", "-t", "1500"
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+        except Exception:
+            pass
+
+def show_critical_alert(title: str, text: str):
+    """Trigger a high-priority, persistent system toast for crashes."""
+    try:
+        subprocess.run([
+            "notify-send", title, text,
+            "-i", "dialog-error", "-u", "critical"
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+    except Exception:
+        pass
+
+def revive_direktor():
+    """Automatically attempt to revive the KWin script via D-Bus."""
+    show_critical_alert("Direktor Auto-Revive", "KWin unloaded the script. Attempting to restart it via D-Bus...")
+    try:
+        qml_path = str(Path.home() / ".local/share/kwin/scripts/org.kde.kwin.direktor/contents/ui/main.qml")
+        subprocess.run(["qdbus-qt6", "org.kde.KWin", "/Scripting", "org.kde.kwin.Scripting.unloadScript", "org.kde.kwin.direktor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        time.sleep(0.2)
+        subprocess.run(["qdbus-qt6", "org.kde.KWin", "/Scripting", "org.kde.kwin.Scripting.loadDeclarativeScript", qml_path, "org.kde.kwin.direktor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["qdbus-qt6", "org.kde.KWin", "/Scripting", "org.kde.kwin.Scripting.start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        file_logger.error(f"Failed to auto-revive: {e}")
+
+def main():
+    file_logger.info("--- direktor-osd companion service started ---")
+    cmd = ["journalctl", "--user", "-u", "plasma-kwin_wayland", "-f", "-n", "0", "--output=cat"]
+    
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1) as proc:
+        for line in proc.stdout:
+            line = line.strip()
+            if not line:
+                continue
+
+            # 1. Handle OSD Notifications
+            osd_match = OSD_PATTERN.search(line)
+            if osd_match:
+                text = osd_match.group(1).strip()
+                if text:
+                    show_osd(text)
+                continue
+
+            # 2. Intercept Crashes & Exceptions
+            if JS_ERROR_PATTERN.search(line):
+                if kwin_config.get("osdCrashAlerts"):
+                    file_logger.error(f"CRASH INTERCEPTED: {line}")
+                    show_critical_alert("Direktor Script Error", f"A Javascript exception occurred:\n{line}")
+                continue
+
+            # 3. Liveness Watchdog (Detect KWin unload)
+            if KWIN_UNLOAD_PATTERN.search(line):
+                if kwin_config.get("osdWatchdog"):
+                    file_logger.warning("LIVENESS WATCHDOG: KWin unloaded Direktor!")
+                    revive_direktor()
+                continue
+
+            # 4. Continuous Rotating File Log
+            if DIREKTOR_LOG_PATTERN.search(line) or "Direktor" in line:
+                if kwin_config.get("osdLogging"):
+                    file_logger.info(line)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

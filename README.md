@@ -1,0 +1,75 @@
+<div align="center">
+  <img src="assets/banner.jpg" alt="Direktor Banner" width="100%">
+  <br>
+  <br>
+
+  [![KDE Plasma 6](https://img.shields.io/badge/KDE_Plasma-6.0+-blue?logo=kde&style=flat-square)](#)
+  [![Wayland First](https://img.shields.io/badge/Wayland-First-brightgreen?logo=wayland&style=flat-square)](#)
+  [![License: GPL-3.0](https://img.shields.io/badge/License-GPL_3.0-purple?style=flat-square)](#)
+
+  **An ultra-modern, zero-bloat, Wayland-First Tiling Window Manager for KDE Plasma 6.**
+</div>
+
+---
+
+## ⚡ Why Direktor?
+
+Traditional tiling managers on KDE often fight the compositor, resulting in sluggish animations, broken geometry, and a rigid experience. 
+
+**Direktor** is completely different. By decoupling the architecture into a hyper-lightweight KWin Javascript engine and a background Python companion daemon, Direktor provides a "buttery smooth" tiling experience that perfectly integrates with Plasma 6's native effects, animations, and Wayland architecture.
+
+## 🚀 Features
+
+- **Wayland Native & Plasma Integrated**: Hooks directly into KWin's native `geometrychange` effects. Windows slide, scale, and morph into their tiles flawlessly without the jumpiness of X11 tiling managers.
+- **Dynamic 3-Tier Gap Engine**: Forget editing messy text files. Swap between Unified padding, Simple inner/outer gaps, and Custom directional gaps on the fly.
+- **Native QML Tray Applet**: Includes a gorgeous, Kirigami-built Tray Applet that allows you to hot-reload configs, cycle layouts, and toggle floating windows instantly.
+- **Plasma System Optimizer**: A built-in diagnostic tool in the Tray Applet that actively scans your `kwinrc` and `kdeglobals` to detect and Auto-Fix conflicting Plasma desktop effects (like Magic Lamp and slow animation scaling).
+- **Direktor-OSD Companion**: A 0.0% CPU background daemon that intercepts KWin logs, throws instant crash alerts, natively routes OSD (On-Screen Display) pills, and acts as a Liveness Watchdog to auto-revive tiling if Wayland resets.
+- **Smart Flatpak Tolerance**: Built-in 35px Geometry Watchdogs to force stubborn GTK Flatpaks into exact pixel-perfect tiles despite Wayland Client-Side Decoration (CSD) quirks.
+
+---
+
+## 🛠️ Installation
+
+Direktor ships with a zero-friction packaging script that automatically compiles the KWin package, installs the Python OSD daemon, and registers the Tray Applet to your autostart.
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/yourusername/direktor.git
+cd direktor
+```
+
+2. **Run the Packager:**
+```bash
+./package.sh --install
+```
+
+*(To apply updates later, simply pull the latest code and run `./package.sh --live-reload` to hot-patch the running KWin session!)*
+
+## 🎮 Usage
+
+Direktor relies on KGlobalAccel for lightning-fast shortcuts. The default bindings are:
+- `Meta + Space`: Cycle active Layout Engine (Dwindle, Columns, Floating)
+- `Meta + F`: Toggle Floating state for the active window
+- `Meta + Arrow Keys`: Swap window focus
+- `Meta + Shift + Arrow Keys`: Move / Swap windows inside the tile tree
+
+*Want to change the gaps or system settings? Just click the Direktor icon in your system tray!*
+
+## 🗺️ Roadmap & Documentation
+
+Curious about what we're building next or how the underlying Watchdog works?
+Check out our [Development Roadmap & TODO (Phase 1-7)](TODO.md).
+
+## 🗑️ Uninstallation
+
+If you decide to return to a vanilla Plasma experience, Direktor leaves zero trace behind:
+```bash
+./package.sh --uninstall
+```
+
+---
+
+<div align="center">
+  <i>Built with ❤️ for the KDE Plasma community.</i>
+</div>

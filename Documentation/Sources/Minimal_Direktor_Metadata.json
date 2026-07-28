@@ -1,0 +1,21 @@
+{
+    "KPlugin": {
+        "Name": "Direktor (Minimal Reference)",
+        "Description": "JSON-configured Director layer for KWin Plasma 6 native C++ Tiling Engine",
+        "Icon": "preferences-system-windows-script-test",
+        "Authors": [
+            {
+                "Name": "Direktor Team"
+            }
+        ],
+        "Id": "org.kde.kwin.direktor.minimal",
+        "Version": "0.1.0",
+        "License": "GPL-3.0+",
+        "ServiceTypes": [
+            "KWin/Script"
+        ]
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}

@@ -1,0 +1,23 @@
+{
+    "KPlugin": {
+        "Name": "Direktor Tiling Manager",
+        "Description": "Wayland-First JSON-configured Director Layer for Plasma 6 Native C++ Tiling Engine",
+        "Icon": "preferences-system-windows-script-test",
+        "Authors": [
+            {
+                "Name": "Direktor Team"
+            }
+        ],
+        "Id": "org.kde.kwin.direktor",
+        "Version": "1.0.0",
+        "License": "GPL-3.0+",
+        "ServiceTypes": [
+            "KWin/Script"
+        ]
+    },
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml",
+    "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
+    "KPackageStructure": "KWin/Script"
+}

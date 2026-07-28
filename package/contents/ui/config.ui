@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DirektorConfigForm</class>
+ <widget class="QWidget" name="DirektorConfigForm">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     
+     <!-- TAB 1: GENERAL -->
+     <widget class="QWidget" name="tabGeneral">
+      <attribute name="title"><string>General</string></attribute>
+      <layout class="QVBoxLayout" name="verticalLayoutGeneralTab">
+       <item>
+        <widget class="QScrollArea" name="scrollAreaGeneral">
+         <property name="widgetResizable"><bool>true</bool></property>
+         <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <layout class="QVBoxLayout" name="verticalLayoutGeneral">
+           
+           <item><widget class="QLabel" name="titleLayout"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Layout&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item>
+            <layout class="QFormLayout" name="formLayoutGeneral1">
+             <item row="0" column="0"><widget class="QLabel" name="labelDefaultLayout"><property name="text"><string>Default Layout Engine:</string></property></widget></item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="kcfg_defaultLayout">
+               <item><property name="text"><string>Dwindle (Hyprland)</string></property></item>
+               <item><property name="text"><string>Scrollable Columns &amp; Tabs (Niri)</string></property></item>
+               <item><property name="text"><string>Master &amp; Stack</string></property></item>
+               <item><property name="text"><string>All Floating</string></property></item>
+              </widget>
+             </item>
+             <item row="1" column="0"><widget class="QLabel" name="labelStartFloating"><property name="text"><string>Start New Monitors in Floating Mode:</string></property></widget></item>
+             <item row="1" column="1"><widget class="QCheckBox" name="kcfg_startFloatingDefault"/></item>
+             <item row="2" column="0"><widget class="QLabel" name="labelCycleLayouts"><property name="text"><string>Active Layouts in Cycle Rotation:</string></property></widget></item>
+             <item row="2" column="1">
+              <layout class="QHBoxLayout" name="horizontalLayoutCycle">
+               <item><widget class="QCheckBox" name="kcfg_cycleDwindle"><property name="text"><string>Dwindle</string></property></widget></item>
+               <item><widget class="QCheckBox" name="kcfg_cycleColumns"><property name="text"><string>Columns</string></property></widget></item>
+               <item><widget class="QCheckBox" name="kcfg_cycleMaster"><property name="text"><string>Master Stack</string></property></widget></item>
+               <item><widget class="QCheckBox" name="kcfg_cycleFloating"><property name="text"><string>Floating</string></property></widget></item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           
+           <item><widget class="QLabel" name="titleAnimation"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Animation&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item>
+            <layout class="QFormLayout" name="formLayoutGeneral2">
+             <item row="0" column="0"><widget class="QLabel" name="labelAnimationDuration"><property name="text"><string>Closing Animation Delay (ms):</string></property></widget></item>
+             <item row="0" column="1"><widget class="QSpinBox" name="kcfg_animationDuration"><property name="maximum"><number>2000</number></property><property name="singleStep"><number>10</number></property></widget></item>
+             <item row="1" column="0"><widget class="QLabel" name="labelMorphingDelay"><property name="text"><string>Morphing Launch Delay (ms):</string></property></widget></item>
+             <item row="1" column="1"><widget class="QSpinBox" name="kcfg_morphingLaunchDelay"><property name="maximum"><number>2000</number></property><property name="singleStep"><number>10</number></property></widget></item>
+            </layout>
+           </item>
+           
+           <item><widget class="QLabel" name="titleMovement"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Movement&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item>
+            <layout class="QFormLayout" name="formLayoutGeneral3">
+             <item row="0" column="0"><widget class="QLabel" name="labelResizeStep"><property name="text"><string>Keyboard Resize Step (px):</string></property></widget></item>
+             <item row="0" column="1"><widget class="QSpinBox" name="kcfg_resizeStep"><property name="maximum"><number>500</number></property></widget></item>
+             <item row="1" column="0"><widget class="QLabel" name="labelMoveStep"><property name="text"><string>Floating Move Step (px):</string></property></widget></item>
+             <item row="1" column="1"><widget class="QSpinBox" name="kcfg_moveStep"><property name="maximum"><number>500</number></property></widget></item>
+            </layout>
+           </item>
+           
+           <item><widget class="QLabel" name="titleDwindle"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Dwindle Layout&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item><widget class="QLabel" name="labelDwindlePlaceholder"><property name="text"><string>&lt;i&gt;No specific Dwindle settings available yet.&lt;/i&gt;</string></property></widget></item>
+           
+           <item><widget class="QLabel" name="titleColumns"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Columns Layout (Niri)&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item>
+            <layout class="QFormLayout" name="formLayoutGeneral4">
+             <item row="0" column="0"><widget class="QLabel" name="labelNiriScrolling"><property name="text"><string>Scrolling Mode:</string></property></widget></item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="kcfg_niriScrollingMode">
+               <item><property name="text"><string>Strict Center (Niri Style)</string></property></item>
+               <item><property name="text"><string>Center Pairs (Karousel Style)</string></property></item>
+              </widget>
+             </item>
+             <item row="1" column="0"><widget class="QLabel" name="labelNiriWidth1"><property name="text"><string>1 Window Width (%):</string></property></widget></item>
+             <item row="1" column="1"><widget class="QSpinBox" name="kcfg_niriWidthOne"><property name="maximum"><number>100</number></property></widget></item>
+             <item row="2" column="0"><widget class="QLabel" name="labelNiriWidth2"><property name="text"><string>2 Windows Width (%):</string></property></widget></item>
+             <item row="2" column="1"><widget class="QSpinBox" name="kcfg_niriWidthTwo"><property name="maximum"><number>100</number></property></widget></item>
+             <item row="3" column="0"><widget class="QLabel" name="labelNiriWidth3"><property name="text"><string>3+ Windows Width (%):</string></property></widget></item>
+             <item row="3" column="1"><widget class="QSpinBox" name="kcfg_niriWidthThree"><property name="maximum"><number>100</number></property></widget></item>
+            </layout>
+           </item>
+           
+           <item><widget class="QLabel" name="titleMaster"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Master Stack Layout&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item><widget class="QLabel" name="labelMasterPlaceholder"><property name="text"><string>&lt;i&gt;No specific Master Stack settings available yet.&lt;/i&gt;</string></property></widget></item>
+           
+           <item><widget class="QLabel" name="titleFloating"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Floating Layout&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item><widget class="QLabel" name="labelFloatingPlaceholder"><property name="text"><string>&lt;i&gt;No specific Floating settings available yet.&lt;/i&gt;</string></property></widget></item>
+           
+           <item><spacer name="verticalSpacerGeneral"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property></spacer></item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     
+     <!-- TAB 2: EXCLUSION LIST -->
+     <widget class="QWidget" name="tabRules">
+      <attribute name="title"><string>Exclusion List</string></attribute>
+      <layout class="QVBoxLayout" name="verticalLayoutRules">
+       <item><widget class="QCheckBox" name="kcfg_useRegexOverrides"><property name="text"><string>Enable Regex Mode</string></property></widget></item>
+       <item><widget class="QGroupBox" name="groupBoxIgnoreClasses"><property name="title"><string>Excluded Window Classes</string></property><layout class="QVBoxLayout" name="verticalLayoutClasses"><item><widget class="QPlainTextEdit" name="kcfg_ignoreClasses"/></item></layout></widget></item>
+       <item><widget class="QGroupBox" name="groupBoxIgnoreTitles"><property name="title"><string>Excluded Window Titles / Captions</string></property><layout class="QVBoxLayout" name="verticalLayoutTitles"><item><widget class="QPlainTextEdit" name="kcfg_ignoreTitles"/></item></layout></widget></item>
+      </layout>
+     </widget>
+
+     <!-- TAB 3: GAPS (NEW 3 TIER SYSTEM) -->
+     <widget class="QWidget" name="tabGaps">
+      <attribute name="title"><string>Gaps</string></attribute>
+      <layout class="QVBoxLayout" name="verticalLayoutGaps">
+       
+       <item>
+        <layout class="QFormLayout" name="formLayoutGapMode">
+         <item row="0" column="0"><widget class="QLabel" name="labelGapMode"><property name="text"><string>&lt;b&gt;Active Gap Tier:&lt;/b&gt;</string></property></widget></item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="kcfg_gapMode">
+           <item><property name="text"><string>Unified Mode</string></property></item>
+           <item><property name="text"><string>Simple Mode</string></property></item>
+           <item><property name="text"><string>User Defined Mode</string></property></item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+
+       <item><widget class="QLabel" name="titleUnified"><property name="text"><string>&lt;h3&gt;Unified Mode Settings&lt;/h3&gt;</string></property></widget></item>
+       <item>
+        <widget class="QWidget" name="container_Unified">
+         <layout class="QFormLayout" name="formLayoutUnified">
+          <property name="leftMargin"><number>30</number></property>
+          <item row="0" column="0"><widget class="QLabel" name="labelGlobalPad"><property name="text"><string>Global Padding:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QSpinBox" name="kcfg_globalPadding"><property name="maximum"><number>200</number></property></widget></item>
+         </layout>
+        </widget>
+       </item>
+       
+       <item><widget class="QLabel" name="titleSimple"><property name="text"><string>&lt;h3&gt;Simple Mode Settings&lt;/h3&gt;</string></property></widget></item>
+       <item>
+        <widget class="QWidget" name="container_Simple">
+         <layout class="QFormLayout" name="formLayoutSimple">
+          <property name="leftMargin"><number>30</number></property>
+          <item row="0" column="0"><widget class="QLabel" name="labelSimpleOuter"><property name="text"><string>Outer Gaps:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QSpinBox" name="kcfg_simpleOuterGap"><property name="maximum"><number>200</number></property></widget></item>
+          <item row="1" column="0"><widget class="QLabel" name="labelSimpleInner"><property name="text"><string>Inner Gaps:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QSpinBox" name="kcfg_simpleInnerGap"><property name="maximum"><number>200</number></property></widget></item>
+         </layout>
+        </widget>
+       </item>
+       
+       <item><widget class="QLabel" name="titleCustom"><property name="text"><string>&lt;h3&gt;User Defined Mode Settings&lt;/h3&gt;</string></property></widget></item>
+       <item>
+        <widget class="QWidget" name="container_Custom">
+         <layout class="QFormLayout" name="formLayoutCustom">
+          <property name="leftMargin"><number>30</number></property>
+          <item row="0" column="0"><widget class="QLabel" name="labelCustomTop"><property name="text"><string>Top Gap:</string></property></widget></item>
+          <item row="0" column="1"><widget class="QSpinBox" name="kcfg_customOuterTop"><property name="maximum"><number>200</number></property></widget></item>
+          <item row="1" column="0"><widget class="QLabel" name="labelCustomBottom"><property name="text"><string>Bottom Gap:</string></property></widget></item>
+          <item row="1" column="1"><widget class="QSpinBox" name="kcfg_customOuterBottom"><property name="maximum"><number>200</number></property></widget></item>
+          <item row="2" column="0"><widget class="QLabel" name="labelCustomLeft"><property name="text"><string>Left Gap:</string></property></widget></item>
+          <item row="2" column="1"><widget class="QSpinBox" name="kcfg_customOuterLeft"><property name="maximum"><number>200</number></property></widget></item>
+          <item row="3" column="0"><widget class="QLabel" name="labelCustomRight"><property name="text"><string>Right Gap:</string></property></widget></item>
+          <item row="3" column="1"><widget class="QSpinBox" name="kcfg_customOuterRight"><property name="maximum"><number>200</number></property></widget></item>
+          <item row="4" column="0"><widget class="QLabel" name="labelCustomVert"><property name="text"><string>Vertical Inner Gap:</string></property></widget></item>
+          <item row="4" column="1"><widget class="QSpinBox" name="kcfg_customInnerVert"><property name="maximum"><number>200</number></property></widget></item>
+          <item row="5" column="0"><widget class="QLabel" name="labelCustomHoriz"><property name="text"><string>Horizontal Inner Gap:</string></property></widget></item>
+          <item row="5" column="1"><widget class="QSpinBox" name="kcfg_customInnerHoriz"><property name="maximum"><number>200</number></property></widget></item>
+         </layout>
+        </widget>
+       </item>
+
+       <item><spacer name="verticalSpacerGaps"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property></spacer></item>
+      </layout>
+     </widget>
+
+     <!-- TAB 4: COSMETICS -->
+     <widget class="QWidget" name="tabCosmetics">
+      <attribute name="title"><string>Cosmetics</string></attribute>
+      <layout class="QVBoxLayout" name="verticalLayoutCosmetics">
+       <item><widget class="QLabel" name="labelCosmeticsInProgress"><property name="text"><string>&lt;h3&gt;Cosmetics Configuration&lt;/h3&gt;&lt;p&gt;&lt;i&gt;In Progress...&lt;/i&gt;&lt;/p&gt;&lt;p&gt;Settings for colored window borders and rounded corners will be added here in a future update.&lt;/p&gt;</string></property><property name="alignment"><set>Qt::AlignCenter</set></property></widget></item>
+      </layout>
+     </widget>
+
+     <!-- TAB 5: DIREKTOR-OSD -->
+     <widget class="QWidget" name="tabOSD">
+      <attribute name="title"><string>Direktor-OSD</string></attribute>
+      <layout class="QVBoxLayout" name="verticalLayoutOSD">
+       <item><widget class="QLabel" name="titleOSD"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Companion Service Config&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+       <item>
+        <layout class="QFormLayout" name="formLayoutOSD">
+         <item row="0" column="0"><widget class="QCheckBox" name="kcfg_osdLogging"><property name="text"><string>Enable Rotating File Logger</string></property></widget></item>
+         <item row="1" column="0"><widget class="QCheckBox" name="kcfg_osdCrashAlerts"><property name="text"><string>Enable Crash Interception Toasts</string></property></widget></item>
+         <item row="2" column="0"><widget class="QCheckBox" name="kcfg_osdWatchdog"><property name="text"><string>Enable Liveness Auto-Revive</string></property></widget></item>
+         <item row="3" column="0"><widget class="QLabel" name="labelOSDStyle"><property name="text"><string>Notification Style:</string></property></widget></item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="kcfg_osdNotificationStyle">
+           <item><property name="text"><string>Plasma OSD Pill (Integrated)</string></property></item>
+           <item><property name="text"><string>Desktop Notification (Toast)</string></property></item>
+           <item><property name="text"><string>Both</string></property></item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item><spacer name="verticalSpacerOSD"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property></spacer></item>
+      </layout>
+     </widget>
+
+     <!-- TAB 6: ADVANCED -->
+     <widget class="QWidget" name="tabAdvanced">
+      <attribute name="title"><string>Advanced</string></attribute>
+      <layout class="QVBoxLayout" name="verticalLayoutAdvanced">
+       <item><widget class="QLabel" name="titleAdvancedShortcuts"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Custom Shortcuts&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+       <item><widget class="QPlainTextEdit" name="kcfg_customShortcuts"/></item>
+       <item><widget class="QLabel" name="titleAdvancedLogs"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Diagnostics &amp; Logs&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+       <item><widget class="QPlainTextEdit" name="kcfg_lastLogSummary"><property name="readOnly"><bool>true</bool></property></widget></item>
+      </layout>
+     </widget>
+
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ 
+</ui>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Direktor KWin Script OSD & Notification Companion
+Documentation=https://github.com/direktor-tiling/direktor
+PartOf=graphical-session.target
+After=graphical-session.target plasma-kwin_wayland.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/direktor-osd
+Restart=on-failure
+RestartSec=2s
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=graphical-session.target

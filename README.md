@@ -29,6 +29,46 @@ Traditional tiling managers on KDE often fight the compositor, resulting in slug
 
 ---
 
+## 🧩 Layout Engines
+
+Direktor ships with a suite of dynamic tiling algorithms that seamlessly tile your windows.
+
+<div align="center">
+  <img src="assets/layouts/Layouts.gif" alt="Switching Layouts" width="100%">
+  <br>
+  <i>Cycling through different layouts instantly using Meta + /</i>
+</div>
+
+### 🔲 Dwindle
+The flagship layout. Windows recursively split the remaining screen space in half, creating a perfectly balanced spiral of tiles.
+<div align="center">
+  <img src="assets/layouts/Dwindle.png" alt="Dwindle Layout PNG" width="48%">
+  <img src="assets/layouts/Dwindle.gif" alt="Dwindle Layout GIF" width="48%">
+</div>
+
+### 📚 Columns
+A scrollable, linear column layout inspired by Niri. Windows spawn side-by-side in endless columns.
+<div align="center">
+  <img src="assets/layouts/Columns.png" alt="Columns Layout PNG" width="48%">
+  <img src="assets/layouts/Columns.gif" alt="Columns Layout GIF" width="48%">
+</div>
+
+### 🥇 Master-Stack
+A classic layout prioritizing a single large "Master" window on the left, with all other windows stacking vertically on the right.
+<div align="center">
+  <img src="assets/layouts/MasterStack.png" alt="Master Stack Layout PNG" width="48%">
+  <img src="assets/layouts/MasterStack.gif" alt="Master Stack Layout GIF" width="48%">
+</div>
+
+### ☁️ All Floating
+Sometimes you just need chaos. The floating layout completely untiles all windows, restoring normal dragging and resizing mechanics without needing to disable Direktor entirely.
+<div align="center">
+  <img src="assets/layouts/Floating.png" alt="Floating Layout PNG" width="48%">
+  <img src="assets/layouts/Floating.gif" alt="Floating Layout GIF" width="48%">
+</div>
+
+---
+
 ## ⚙️ Suggested Setup
 
 For the absolute best, most fluid experience, we highly recommend the following native Plasma settings (which can be auto-applied via the Tray Applet's System Optimizer):

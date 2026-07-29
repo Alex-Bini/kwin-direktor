@@ -6,6 +6,7 @@
   [![KDE Plasma 6](https://img.shields.io/badge/KDE_Plasma-6.0+-blue?logo=kde&style=flat-square)](#)
   [![Wayland First](https://img.shields.io/badge/Wayland-First-brightgreen?logo=wayland&style=flat-square)](#)
   [![License: GPL-3.0](https://img.shields.io/badge/License-GPL_3.0-purple?style=flat-square)](#)
+  [![Ko-fi](https://img.shields.io/badge/Support_me_on-Ko--fi-F16061?logo=ko-fi&style=flat-square)](https://ko-fi.com/tcone)
 
   **An ultra-modern, zero-bloat, Wayland-First Tiling Window Manager for KDE Plasma 6.**
 </div>
@@ -158,5 +159,6 @@ Please note:
 ---
 
 <div align="center">
-  <i>Built with ❤️ for the KDE Plasma community.</i>
+  <i>Built with ❤️ for the KDE Plasma community.</i><br><br>
+  <a href="https://ko-fi.com/tcone"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi"></a>
 </div>

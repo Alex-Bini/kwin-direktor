@@ -86,8 +86,8 @@ Direktor ships with a zero-friction packaging script that automatically compiles
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/direktor.git
-cd direktor
+git clone https://github.com/Alex-Bini/kwin-direktor.git
+cd kwin-direktor
 ```
 
 2. **Run the Packager:**

@@ -119,8 +119,24 @@ Direktor relies on KGlobalAccel for lightning-fast shortcuts. Here is the recomm
 
 *Want to change the gaps or system settings? Just click the Direktor icon in your system tray!*
 
-## 🗺️ Roadmap & Documentation
+## 🐛 Troubleshooting & Logs
 
+If you encounter crashes or unexpected behavior, please provide the logs when opening a GitHub Issue! Direktor uses a 3-part logging system:
+
+1. **KWin Script Log:** (Core Tiling Logic) 
+   - Found at: `journalctl -g "Direktor"` or `~/.local/share/kwin/scripts/direktor/direktor.log` (if enabled)
+2. **Tray Applet Log:** (UI & Config Bridge)
+   - Found at: `~/.config/direktor/direktor-tray.log`
+3. **OSD Daemon Log:** (Popups & Watchdog)
+   - Found at: `~/.config/direktor/direktor-osd.log`
+
+### ⚠️ Important Lifecycle Notices
+- **Turning off Direktor:** If you disable the Direktor script in Plasma's System Settings, **you must Log Out and Log Back In** to fully clear the running KWin script instance from memory.
+- **The Tray Applet is Independent:** The Python Tray Applet runs via a standard autostart entry (`~/.config/autostart/`). Simply disabling the KWin script does **not** kill the tray applet daemon in the background. To completely remove the background daemons, run `./package.sh --uninstall`.
+
+---
+
+## 🗺️ Roadmap & Documentation
 Curious about what we're building next or how the underlying Watchdog works?
 Check out our [Development Roadmap & TODO (Phase 1-7)](TODO.md).
 

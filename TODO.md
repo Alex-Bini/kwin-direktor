@@ -84,6 +84,7 @@
 ---
 
 ## 🐞 Phase 7: Edge-Case Bug Squashing — PLANNED
+- [ ] **Fullscreen Game Grace Period**: Fix Wayland/Proton game launch bugs (Issue #2) where games briefly drop their fullscreen flag during initialization. Introduce a 1-2 second grace period where recently-fullscreen apps are ignored by the tiling engine to prevent them from getting aggressively shrunken during startup.
 - [ ] **Geometry Watchdog Tuning Options**: Add settings (in both `kwinrc`/`main.xml` and the Tray Applet) to expose the Watchdog's internal parameters, allowing users to customize the "retry count" and the "delay between retries" for stubborn apps like HydraLauncher.
 - [ ] **Flatpak Geometry Strictness**: Ensure the new 35px Geometry Watchdog perfectly snaps GTK apps under all scaling configurations.
 - [ ] **Floating Layout Constraints**: Fix the "glued window" behavior described in Phase 2 for the 'All Floating' engine.

@@ -135,10 +135,10 @@ export class LayoutManager {
      * @param {string} surfaceId
      */
     applyLayoutToSurface(tileManager, windows, surfaceId, output) {
-        print(`[Direktor] applyLayoutToSurface CALLED for surfaceId: ${surfaceId}`);
+        // print(`[Direktor] applyLayoutToSurface CALLED for surfaceId: ${surfaceId}`);
         try {
             if (!tileManager || !tileManager.rootTile || !windows) {
-                print(`[Direktor] applyLayoutToSurface returning early due to invalid args: tm=${!!tileManager}, rootTile=${tileManager ? !!tileManager.rootTile : false}, windows=${!!windows}`);
+                // print(`[Direktor] applyLayoutToSurface returning early due to invalid args: tm=${!!tileManager}, rootTile=${tileManager ? !!tileManager.rootTile : false}, windows=${!!windows}`);
                 return;
             }
             const layoutId = this.getActiveLayoutId(surfaceId);

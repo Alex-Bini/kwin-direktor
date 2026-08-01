@@ -12,11 +12,13 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import time
+import threading
+
 import configparser
 
 # Regex patterns to monitor in the KWin journal stream
 OSD_PATTERN = re.compile(r"\[INFO\] \[OSD\] (.*)")
-DIREKTOR_LOG_PATTERN = re.compile(r"(\[Direktor.*?\]|\[2026.*?\]|\[INFO\].*?direktor)")
+DIREKTOR_LOG_PATTERN = re.compile(r"(\[Direktor.*?\]|\[20\d{2}.*?\]|\[INFO\].*?direktor)")
 JS_ERROR_PATTERN = re.compile(r"(TypeError:|ReferenceError:|SyntaxError:|Uncaught exception).*?direktor")
 KWIN_UNLOAD_PATTERN = re.compile(r"Unloading script.*?direktor", re.IGNORECASE)
 
@@ -116,7 +118,26 @@ def revive_direktor():
     except Exception as e:
         file_logger.error(f"Failed to auto-revive: {e}")
 
+
+def liveness_worker():
+    missed_pings = 0
+    while True:
+        time.sleep(10)
+        try:
+            res = subprocess.run(["qdbus-qt6", "org.kde.kglobalaccel", "/component/kwin", "shortcutNames"], capture_output=True, text=True)
+            if "direktor_reload_config" not in res.stdout:
+                missed_pings += 1
+                if missed_pings >= 12:  # 2 minutes
+                    file_logger.error("KWin script not responding for 2 minutes. Auto-terminating OSD to save memory.")
+                    show_critical_alert("Direktor Daemons Offline", "Direktor inactive, terminating...")
+                    os._exit(0)
+            else:
+                missed_pings = 0
+        except Exception:
+            pass
+
 def main():
+    threading.Thread(target=liveness_worker, daemon=True).start()
     file_logger.info("--- direktor-osd companion service started ---")
     cmd = ["journalctl", "--user", "-u", "plasma-kwin_wayland", "-f", "-n", "0", "--output=cat"]
     

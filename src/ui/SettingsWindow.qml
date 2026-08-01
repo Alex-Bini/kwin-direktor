@@ -73,6 +73,12 @@ QQC2.ApplicationWindow {
                             icon.name: "window-pop-out"
                             onClicked: backend.triggerShortcut("toggle_floating")
                         }
+                        
+                        PlasmaComponents3.Button {
+                            text: "Toggle Pause (Meta+Shift+P)"
+                            icon.name: "media-playback-pause"
+                            onClicked: backend.toggle_pause()
+                        }
                     }
                 }
             }
@@ -92,9 +98,21 @@ QQC2.ApplicationWindow {
                         RowLayout {
                             PlasmaComponents3.Label { text: "Default Engine:" }
                             PlasmaComponents3.ComboBox {
-                                model: ["dwindle", "columns", "master", "floating"]
-                                currentIndex: model.indexOf(backend.defaultLayout)
-                                onActivated: backend.defaultLayout = model[currentIndex]
+                                textRole: "text"
+                                valueRole: "value"
+                                model: [
+                                    { text: "Dwindle", value: "dwindle" },
+                                    { text: "Columns (Niri)", value: "niri-scrollable" },
+                                    { text: "Master Stack", value: "master-stack" },
+                                    { text: "Floating", value: "floating" }
+                                ]
+                                currentIndex: {
+                                    for (var i = 0; i < model.length; i++) {
+                                        if (model[i].value === backend.defaultLayout) return i;
+                                    }
+                                    return 0;
+                                }
+                                onActivated: backend.defaultLayout = model[currentIndex].value
                             }
                         }
                         PlasmaComponents3.CheckBox { text: "Start floating on new monitors"; checked: backend.startFloatingDefault; onCheckedChanged: backend.startFloatingDefault = checked }
@@ -186,6 +204,29 @@ QQC2.ApplicationWindow {
                         RowLayout {
                             PlasmaComponents3.Label { text: "Move Step (px):" }
                             PlasmaComponents3.SpinBox { from: 10; to: 200; stepSize: 10; value: backend.moveStep; onValueChanged: backend.moveStep = value }
+                        }
+                        
+                        PlasmaComponents3.Label { text: "<h3>Geometry Watchdog</h3>"; textFormat: Text.RichText }
+                        GridLayout {
+                            columns: 2
+                            rowSpacing: 10
+                            columnSpacing: 10
+
+                            PlasmaComponents3.Label { text: "Max Retries (Ticks):" }
+                            PlasmaComponents3.SpinBox { from: 1; to: 100; stepSize: 1; value: backend.watchdogMaxRetries; onValueChanged: backend.watchdogMaxRetries = value }
+
+                            PlasmaComponents3.Label { text: "Retry Delay (ms):" }
+                            PlasmaComponents3.SpinBox { from: 10; to: 1000; stepSize: 10; value: backend.watchdogRetryDelayMs; onValueChanged: backend.watchdogRetryDelayMs = value }
+                        }
+                        
+                        PlasmaComponents3.Label { text: "<h3>Floating Layout</h3>"; textFormat: Text.RichText }
+                        GridLayout {
+                            columns: 2
+                            rowSpacing: 10
+                            columnSpacing: 10
+
+                            PlasmaComponents3.Label { text: "Cascade Offset (px):" }
+                            PlasmaComponents3.SpinBox { from: 0; to: 200; stepSize: 1; value: backend.floatingCascadeOffset; onValueChanged: backend.floatingCascadeOffset = value }
                         }
                         
                         Kirigami.Separator { Layout.fillWidth: true }

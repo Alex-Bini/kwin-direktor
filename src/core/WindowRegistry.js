@@ -9,16 +9,12 @@
 
 import { TileUtils } from "./TileUtils.js";
 
-export class WindowRegistry {
-    /**
-     * @param {Object} engine Reference to main DirektorEngine instance
-     */
-    constructor(engine) {
-        this.engine = engine;
-        // Map keyed by KWin.Window surface to WindowState object
-        this.windows = new Map();
-        this.nextAbsoluteOrder = 1;
-    }
+export function WindowRegistry(engine) {
+    this.engine = engine;
+    this.windows = new Map();
+    this.nextAbsoluteOrder = 1;
+}
+
 
     /**
      * Registers a newly observed window or updates its state.
@@ -26,7 +22,7 @@ export class WindowRegistry {
      * @param {"tiled" | "floating" | "ignored"} state 
      * @returns {Object} The registered WindowState entry
      */
-    register(window, state = "tiled") {
+WindowRegistry.prototype.register = function(window, state = "tiled") {
         if (!window) return null;
 
         let entry = this.windows.get(window);
@@ -79,7 +75,7 @@ export class WindowRegistry {
      * Removes a closed or unmanaged window from the registry.
      * @param {KWin.Window} window 
      */
-    unregister(window) {
+WindowRegistry.prototype.unregister = function(window) {
         if (!window) return;
         const entry = this.windows.get(window);
         if (entry) {
@@ -97,7 +93,7 @@ export class WindowRegistry {
      * @param {KWin.Window} window 
      * @returns {"tiled" | "floating" | "ignored"}
      */
-    getState(window) {
+WindowRegistry.prototype.getState = function(window) {
         if (!window) return "ignored";
         const entry = this.windows.get(window);
         return entry ? entry.state : "ignored";
@@ -109,7 +105,7 @@ export class WindowRegistry {
      * @param {boolean} useLayoutPosition
      * @returns {KWin.Window[]}
      */
-    sortWindows(windows, useLayoutPosition = true) {
+WindowRegistry.prototype.sortWindows = function(windows, useLayoutPosition = true) {
         if (!windows || windows.length <= 1) return windows;
         return windows.slice().sort((a, b) => {
             const entryA = this.getEntry(a);
@@ -128,7 +124,7 @@ export class WindowRegistry {
      * @param {KWin.Window} window 
      * @returns {Object | null}
      */
-    getEntry(window) {
+WindowRegistry.prototype.getEntry = function(window) {
         if (!window) return null;
         return this.windows.get(window) || null;
     }
@@ -139,7 +135,7 @@ export class WindowRegistry {
      * @param {"tiled" | "floating" | "ignored"} newState 
      * @param {boolean} userOverridden 
      */
-    setState(window, newState, userOverridden = false) {
+WindowRegistry.prototype.setState = function(window, newState, userOverridden = false) {
         let entry = this.windows.get(window);
         if (!entry) {
             entry = this.register(window, newState);
@@ -157,7 +153,7 @@ export class WindowRegistry {
      * @param {KWin.Window} window 
      * @returns {Object | null} Result summary of toggle operation
      */
-    toggleFloating(window) {
+WindowRegistry.prototype.toggleFloating = function(window) {
         if (!window || !window.normalWindow) return null;
 
         let entry = this.windows.get(window);
@@ -208,7 +204,7 @@ export class WindowRegistry {
         }
     }
 
-    saveIgnoreClassesToConfig(key, valueStr) {
+WindowRegistry.prototype.saveIgnoreClassesToConfig = function(key, valueStr) {
         if (!key || (!valueStr && valueStr !== "")) return;
         print(`[Direktor] Persisting ${key} directly to kwinrc ([Script-org.kde.kwin.direktor]): ${valueStr}`);
         try {
@@ -230,4 +226,3 @@ export class WindowRegistry {
             print(`[Direktor] Error updating config: ${e}`);
         }
     }
-}

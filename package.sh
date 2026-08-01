@@ -104,10 +104,12 @@ echo "  kpackagetool6 --type KWin/Script --upgrade $OUTPUT_FILE"
 
 if [ "$1" = "--uninstall" ]; then
     echo "[Direktor Packager] Uninstalling Direktor KWin script and companion service..."
-    kpackagetool6 --type KWin/Script --remove direktor 2>/dev/null || true
+    kpackagetool6 --type KWin/Script --remove org.kde.kwin.direktor 2>/dev/null || true
+    qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript "org.kde.kwin.direktor" 2>/dev/null || true
     systemctl --user stop direktor-osd.service 2>/dev/null || true
     systemctl --user disable direktor-osd.service 2>/dev/null || true
     rm -f "$HOME/.config/systemd/user/direktor-osd.service" "$HOME/.local/bin/direktor-osd"
+    rm -f "$HOME/.config/autostart/direktor-tray.desktop"
     systemctl --user daemon-reload 2>/dev/null || true
     echo "[Direktor Packager] Uninstalled successfully."
     exit 0
@@ -119,7 +121,7 @@ if [ "$1" = "--install" ] || [ "$1" = "--live-reload" ] || [ "$1" = "-r" ] || [ 
     cat <<EOF > ~/.config/autostart/direktor-tray.desktop
 [Desktop Entry]
 Type=Application
-Exec=/usr/bin/python3 $(pwd)/src/ui/direktor_gui.py
+Exec=bash -c "mkdir -p ~/.config/direktor && /usr/bin/python3 $(pwd)/src/ui/direktor_gui.py >> ~/.config/direktor/direktor-tray.log 2>&1"
 Hidden=false
 NoDisplay=false
 Terminal=false
@@ -142,8 +144,13 @@ EOF
     kpackagetool6 --type KWin/Script --upgrade "$OUTPUT_FILE" 2>/dev/null || kpackagetool6 --type KWin/Script --install "$OUTPUT_FILE"
     if [ "$1" = "--live-reload" ] || [ "$1" = "-r" ]; then
         echo "[Direktor Packager] Live-rebooting KWin script 'org.kde.kwin.direktor' via D-Bus..."
+        # AGGRESSIVELY clear QML Cache to prevent executing stale ghost bytecode
+        rm -rf "$HOME/.cache/kwin/qmlcache"/* 2>/dev/null || true
+        
+        qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript "org.kde.kwin.direktor.dev2" 2>/dev/null || true
+        qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript "org.kde.kwin.direktor.dev3" 2>/dev/null || true
         qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.unloadScript "org.kde.kwin.direktor" 2>/dev/null || true
-        qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.loadDeclarativeScript "$HOME/.local/share/kwin/scripts/org.kde.kwin.direktor/contents/ui/main.qml" "org.kde.kwin.direktor" 2>/dev/null || true
+        qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.loadDeclarativeScript "$HOME/.local/share/kwin/scripts/org.kde.kwin.direktor/contents/ui/main.qml" "org.kde.kwin.direktor"
         qdbus-qt6 org.kde.KWin /Scripting org.kde.kwin.Scripting.start 2>/dev/null || true
         echo "[Direktor Packager] Live-reboot complete!"
     else

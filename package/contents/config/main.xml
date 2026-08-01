@@ -34,6 +34,9 @@
         <entry name="morphingLaunchDelay" type="Int"><default>320</default></entry>
         <entry name="resizeStep" type="Int"><default>40</default></entry>
         <entry name="moveStep" type="Int"><default>60</default></entry>
+        <entry name="watchdogMaxRetries" type="Int"><default>20</default></entry>
+        <entry name="watchdogRetryDelayMs" type="Int"><default>100</default></entry>
+        <entry name="floatingCascadeOffset" type="Int"><default>32</default></entry>
 
         <!-- Rules -->
         <entry name="useRegexOverrides" type="Bool"><default>true</default></entry>

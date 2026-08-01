@@ -52,12 +52,22 @@ export class ScrollableNiriLayout extends LayoutEngine {
 
         // Calculate custom and default widths for every window
         const colWidths = windows.map(w => {
+            let width = 0;
             if (this.customWidths.has(w.internalId)) {
-                return Math.floor(safeArea.width * this.customWidths.get(w.internalId));
+                width = Math.floor(safeArea.width * this.customWidths.get(w.internalId));
+            } else if (windows.length === 1) {
+                width = Math.floor(safeArea.width * widthOne);
+            } else if (windows.length === 2) {
+                width = Math.floor(safeArea.width * widthTwo);
+            } else {
+                width = Math.floor(safeArea.width * widthThree);
             }
-            if (windows.length === 1) return Math.floor(safeArea.width * widthOne);
-            if (windows.length === 2) return Math.floor(safeArea.width * widthTwo);
-            return Math.floor(safeArea.width * widthThree);
+            
+            // Issue #3: Respect rigid minimum widths to prevent horizontal overlap
+            if (w && w.minSize && typeof w.minSize.width === "number" && w.minSize.width > width) {
+                width = w.minSize.width;
+            }
+            return width;
         });
 
         // Find the active window to ensure it stays in the viewport

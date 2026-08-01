@@ -156,6 +156,7 @@ Item {
             }
         } catch (e) {
             console.warn("[Direktor] Error starting engine from QML: " + e);
+            try { print("[Direktor] Error starting engine from QML: " + e); } catch (err) {}
         }
     }
 }

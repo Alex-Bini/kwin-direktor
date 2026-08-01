@@ -45,6 +45,9 @@ class DirektorBackend(QObject):
         self._morphingLaunchDelay = self.kreadconfig("morphingLaunchDelay", 320)
         self._resizeStep = self.kreadconfig("resizeStep", 40)
         self._moveStep = self.kreadconfig("moveStep", 60)
+        self._watchdogMaxRetries = self.kreadconfig("watchdogMaxRetries", 20)
+        self._watchdogRetryDelayMs = self.kreadconfig("watchdogRetryDelayMs", 100)
+        self._floatingCascadeOffset = self.kreadconfig("floatingCascadeOffset", 32)
         
         # Niri
         self._niriScrollingMode = self.kreadconfig("niriScrollingMode", 0)
@@ -228,6 +231,19 @@ class DirektorBackend(QObject):
     @moveStep.setter
     def moveStep(self, val): self._update_val("moveStep", "_moveStep", val)
 
+    @pyqtProperty(int, notify=configChanged)
+    def watchdogMaxRetries(self): return self._watchdogMaxRetries
+    @watchdogMaxRetries.setter
+    def watchdogMaxRetries(self, val): self._update_val("watchdogMaxRetries", "_watchdogMaxRetries", val)
+    @pyqtProperty(int, notify=configChanged)
+    def watchdogRetryDelayMs(self): return self._watchdogRetryDelayMs
+    @watchdogRetryDelayMs.setter
+    def watchdogRetryDelayMs(self, val): self._update_val("watchdogRetryDelayMs", "_watchdogRetryDelayMs", val)
+    @pyqtProperty(int, notify=configChanged)
+    def floatingCascadeOffset(self): return self._floatingCascadeOffset
+    @floatingCascadeOffset.setter
+    def floatingCascadeOffset(self, val): self._update_val("floatingCascadeOffset", "_floatingCascadeOffset", val)
+
     # Niri
     @pyqtProperty(int, notify=configChanged)
     def niriScrollingMode(self): return self._niriScrollingMode
@@ -270,7 +286,17 @@ class DirektorBackend(QObject):
     @osdCrashAlerts.setter
     def osdCrashAlerts(self, val): self._update_val("osdCrashAlerts", "_osdCrashAlerts", val)
     @pyqtProperty(bool, notify=configChanged)
-    def osdWatchdog(self): return self._osdWatchdog
+    def osdWatchdog(self):
+        return self._osdWatchdog
+
+    @pyqtProperty(bool, notify=configChanged)
+    def isPaused(self):
+        return getattr(self, '_isPaused', False)
+
+    @isPaused.setter
+    def isPaused(self, value):
+        self._isPaused = value
+        self.configChanged.emit()
     @osdWatchdog.setter
     def osdWatchdog(self, val): self._update_val("osdWatchdog", "_osdWatchdog", val)
     @pyqtProperty(int, notify=configChanged)
@@ -340,6 +366,11 @@ class DirektorBackend(QObject):
         # Ping the Plasma OSD directly as a test
         subprocess.run(["qdbus-qt6", "org.kde.plasmashell", "/org/kde/osdService", "org.kde.osdService.showText", "preferences-system-windows", "Oi Mate"])
 
+    @pyqtSlot()
+    def toggle_pause(self):
+
+        self.triggerShortcut("direktor_toggle_pause")
+
     @pyqtSlot(str)
     def triggerShortcut(self, shortcut_name):
         subprocess.run(["qdbus-qt6", "org.kde.kglobalaccel", "/component/kwin", "invokeShortcut", shortcut_name], capture_output=True)
@@ -381,6 +412,25 @@ class DirektorTrayApp:
         self.tray_icon.setContextMenu(self.menu)
         self.tray_icon.activated.connect(self.on_tray_activated)
         self.tray_icon.show()
+        # Liveness Watchdog
+        self.missed_pings = 0
+        self.liveness_timer = QTimer()
+        self.liveness_timer.timeout.connect(self.check_liveness)
+        self.liveness_timer.start(10000)  # Every 10 seconds
+
+    def check_liveness(self):
+        try:
+            res = subprocess.run(["qdbus-qt6", "org.kde.kglobalaccel", "/component/kwin", "shortcutNames"], capture_output=True, text=True)
+            if "direktor_reload_config" not in res.stdout:
+                self.missed_pings += 1
+                if self.missed_pings >= 12:  # 2 minutes
+                    print("[Direktor Tray] KWin script not responding for 2 minutes. Auto-terminating to save memory.")
+                    self.app.quit()
+            else:
+                self.missed_pings = 0
+        except Exception:
+            pass
+
         
     def toggle_window(self):
         if self.window.property("visible"):

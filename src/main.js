@@ -14,8 +14,19 @@ import { TileUtils } from "./core/TileUtils.js";
 import { WindowRegistry } from "./core/WindowRegistry.js";
 import { DirectionalEngine } from "./core/DirectionalEngine.js";
 
-export class DirektorEngine {
-    constructor() {
+export function DirektorEngine() {
+
+
+    this.closingWindows = new Set();
+    this.initTimer = null;
+
+    try {
+        this._init();
+    } catch (e) {
+        print("[Direktor] FATAL ERROR IN _INIT: " + e);
+    }
+}
+DirektorEngine.prototype._init = function() {
         print("[Direktor] Starting Wayland-First Tiling Manager for Plasma 6...");
         if (typeof Logger !== "undefined") Logger.info("Main", "Starting Wayland-First Tiling Manager for Plasma 6...");
 
@@ -35,7 +46,8 @@ export class DirektorEngine {
         this.windowsByOutput = new Map();
         this.windowOrderMap = new Map(); // key -> KWin.Window[]
         this.closingWindows = new Set();
-        this.animationDuration = 300; // System animation duration wait (ms)
+        this.animationDuration = 300;
+        this.isPaused = false; // System animation duration wait (ms)
 
         // 2. Connect KWin Workspace Signals
         this.connectSignals();
@@ -61,7 +73,7 @@ export class DirektorEngine {
         }, 300);
     }
 
-    kwinSetTimeout(func, delayMs) {
+DirektorEngine.prototype.kwinSetTimeout = function(func, delayMs) {
         if (typeof setTimeout === "function") {
             try {
                 setTimeout(func, delayMs);
@@ -101,7 +113,7 @@ export class DirektorEngine {
         try { func(); } catch (e) {}
     }
 
-    swapWindowsInOrder(winA, winB) {
+DirektorEngine.prototype.swapWindowsInOrder = function(winA, winB) {
         if (!winA || !winB || winA === winB) return;
         const output = winA.output || workspace.activeScreen || workspace.screens[0];
         const currentDesktop = workspace.currentDesktop;
@@ -127,11 +139,11 @@ export class DirektorEngine {
         }
     }
 
-    promoteMaster(win = null) {
+DirektorEngine.prototype.promoteMaster = function(win = null) {
         const target = win || workspace.activeWindow;
         if (!target || !target.normalWindow) return;
         const output = target.output || workspace.activeScreen || workspace.screens[0];
-        if (!output) return;
+        if (!output || this.isPaused) return;
         const currentDesktop = workspace.currentDesktop;
         const key = `${output.name}_${currentDesktop ? (currentDesktop.desktop || currentDesktop) : 'all'}`;
         let list = this.windowOrderMap.get(key);
@@ -162,7 +174,7 @@ export class DirektorEngine {
         }
     }
 
-    connectSignals() {
+DirektorEngine.prototype.connectSignals = function() {
         const self = this;
         // Handle window activation for auto-scrolling layouts
         workspace.windowActivated.connect((window) => {
@@ -212,7 +224,7 @@ export class DirektorEngine {
         } catch (e) {}
     }
 
-    registerShortcuts() {
+DirektorEngine.prototype.registerShortcuts = function() {
         const shortcuts = this.configManager.config.shortcuts || {};
         const self = this;
 
@@ -273,6 +285,7 @@ export class DirektorEngine {
         registerShortcut("direktor_increase_height", "Direktor: Increase Window Height", shortcuts["increase_height"] || "Meta+Ctrl+Up", function() { self.dbusBridge.triggerAction("increase_height"); });
         registerShortcut("direktor_decrease_height", "Direktor: Decrease Window Height", shortcuts["decrease_height"] || "Meta+Ctrl+Down", function() { self.dbusBridge.triggerAction("decrease_height"); });
         registerShortcut("direktor_reload_config", "Direktor: Hot-Reload Configuration", shortcuts["reload_config"] || "Meta+Shift+R", function() { self.reloadConfiguration(); });
+        registerShortcut("direktor_toggle_pause", "Direktor: Pause Tiling Engine", shortcuts["toggle_pause"] || "Meta+Shift+P", function() { self.dbusBridge.triggerAction("toggle_pause"); });
 
         const customBindings = this.configManager.config.customBindings || [];
         for (let i = 0; i < customBindings.length; i++) {
@@ -293,7 +306,7 @@ export class DirektorEngine {
         }
     }
 
-    showNotification(text) {
+DirektorEngine.prototype.showNotification = function(text) {
         if (!text) return;
         print(`[INFO] [OSD] ${text}`);
         if (typeof console !== "undefined" && typeof console.warn === "function") {
@@ -304,7 +317,7 @@ export class DirektorEngine {
         }
     }
 
-    connectWindowSignals(window) {
+DirektorEngine.prototype.connectWindowSignals = function(window) {
         if (!window || window._direktorConnected) return;
         window._direktorConnected = true;
         const self = this;
@@ -326,9 +339,25 @@ export class DirektorEngine {
                 const output = window.output || workspace.activeScreen || workspace.screens[0];
                 self._retileWindowDesktops(window);
             } else if (targetState === "tiled" && currentState !== "tiled") {
-                self.registry.setState(window, "tiled");
-                const output = window.output || workspace.activeScreen || workspace.screens[0];
-                self._retileWindowDesktops(window);
+                if (currentState === "ignored") {
+                    print(`[Direktor] Grace Period: Window '${window.caption || window.resourceClass}' dropped ignore state. Waiting 1500ms...`);
+                    window._direktorGraceUntil = Date.now() + 1500;
+                    self.kwinSetTimeout(() => {
+                        if (!window || self.closingWindows.has(window) || !window.normalWindow) return;
+                        const reAction = self.ruleEngine.evaluateWindow(window);
+                        const currentEntry = self.registry.getEntry(window);
+                        if (reAction === "tile" && currentEntry && currentEntry.state !== "tiled") {
+                            print(`[Direktor] Grace Period elapsed. Tiling window '${window.caption || window.resourceClass}'...`);
+                            self.registry.setState(window, "tiled");
+                            self._retileWindowDesktops(window);
+                        } else {
+                            print(`[Direktor] Grace Period aborted. Window '${window.caption || window.resourceClass}' re-asserted ignore state.`);
+                        }
+                    }, 1500);
+                } else {
+                    self.registry.setState(window, "tiled");
+                    self._retileWindowDesktops(window);
+                }
             } else if (targetState === "floating" && currentState !== "floating") {
                 self.registry.setState(window, "floating");
                 TileUtils.untileWindow(window);
@@ -338,11 +367,15 @@ export class DirektorEngine {
         };
         try { window.resourceClassChanged.connect(checkReEvaluate); } catch (e) {}
         try { window.captionChanged.connect(checkReEvaluate); } catch (e) {}
+        try { window.fullScreenChanged.connect(checkReEvaluate); } catch (e) {}
         try { window.minimizedChanged.connect(() => { self._retileWindowDesktops(window); }); } catch (e) {}
 
         const onFinished = () => {
-            if (self._isRetiling) return;
+            if (self._isRetiling || self.isPaused) return;
             const output = window.output || workspace.activeScreen || workspace.screens[0];
+            const surfaceId = TileUtils.computeSurfaceId(output, workspace.currentDesktop);
+            if (self.layoutManager.getActiveLayoutId(surfaceId) === "floating") return; // Disable snapback for All Floating layout
+            if (self.registry.getState(window) === "floating") return; // Disable snapback for explicitly floating windows
             const allWin = TileUtils.getWorkspaceWindows();
             const currentDesktop = workspace.currentDesktop;
             const windows = [];
@@ -376,7 +409,7 @@ export class DirektorEngine {
         } catch (e) {}
         try {
             window.frameGeometryChanged.connect(() => {
-                if (self._isRetiling) return;
+                if (self._isRetiling || self.isPaused) return;
                 const output = window.output || workspace.activeScreen || workspace.screens[0];
                 const allWin = TileUtils.getWorkspaceWindows();
                 const currentDesktop = workspace.currentDesktop;
@@ -401,8 +434,8 @@ export class DirektorEngine {
         } catch (e) {}
     }
 
-    _retileWindowDesktops(window) {
-        if (!window) return;
+DirektorEngine.prototype._retileWindowDesktops = function(window) {
+        if (!window || this.isPaused) return;
         const output = window.output || workspace.activeScreen || workspace.screens[0];
         if (!output) return;
         const desks = window.desktops && window.desktops.length > 0 ? Array.from(window.desktops) : [workspace.currentDesktop];
@@ -411,15 +444,17 @@ export class DirektorEngine {
         }
     }
 
-    handleWindowAdded(window) {
+    DirektorEngine.prototype.handleWindowAdded = function(window) {
         if (!window || !window.normalWindow || window.specialWindow || window.lockScreen || window.splash || window.onScreenDisplay || window.popupWindow || window.dock || window.fullScreen) {
             this.registry.register(window, "ignored");
+            this.connectWindowSignals(window);
             return;
         }
 
         const action = this.ruleEngine.evaluateWindow(window);
         if (action === "ignore") {
             this.registry.register(window, "ignored");
+            this.connectWindowSignals(window);
             return;
         }
 
@@ -464,7 +499,7 @@ export class DirektorEngine {
         this.kwinSetTimeout(handler, 20);
     }
 
-    handleWindowRemoved(window) {
+DirektorEngine.prototype.handleWindowRemoved = function(window) {
         if (!window) return;
         const entry = this.registry.getEntry(window);
         if (!entry || (entry.state !== "tiled" && entry.state !== "floating")) {
@@ -484,7 +519,7 @@ export class DirektorEngine {
         }
     }
 
-    tileWindow(window) {
+DirektorEngine.prototype.tileWindow = function(window) {
         if (!window) return;
         this.registry.setState(window, "tiled");
         this.connectWindowSignals(window);
@@ -496,7 +531,8 @@ export class DirektorEngine {
         // Wayland Startup Geometry Verification & Auto-Fallback Watchdog (Smart Listener)
         const self = this;
         let retries = 0;
-        const maxRetries = 20; // 20 * 100ms = 2.0s
+        const maxRetries = self.configManager.config.general.watchdogMaxRetries || 20;
+        const retryDelayMs = self.configManager.config.general.watchdogRetryDelayMs || 100;
         let resolved = false;
         let sigWrapper = null;
 
@@ -504,6 +540,15 @@ export class DirektorEngine {
             if (resolved || !window || !window.normalWindow || self.closingWindows.has(window)) return;
             const entry = self.registry.getEntry(window);
             if (!entry || entry.state !== "tiled") return;
+
+            // P0: Issue #2 fix - skip watchdog entirely if window went fullscreen or is in grace period
+            if (window.fullScreen || (window._direktorGraceUntil && window._direktorGraceUntil > Date.now())) {
+                resolved = true;
+                if (sigWrapper && window.frameGeometryChanged) {
+                    try { window.frameGeometryChanged.disconnect(sigWrapper); } catch (e) {}
+                }
+                return;
+            }
 
             const fg = window.frameGeometry;
             const tr = window._direktorLastTargetRect;
@@ -524,22 +569,18 @@ export class DirektorEngine {
             retries++;
             if (retries < maxRetries) {
                 if (retries % 2 === 0) {
-                    // Only retile every 200ms to avoid spamming the compositor
+                    // Only retile occasionally to avoid spamming the compositor
                     self._retileWindowDesktops(window);
                 }
-                self.kwinSetTimeout(checkGeometryAndRetry, 100);
+                self.kwinSetTimeout(checkGeometryAndRetry, retryDelayMs);
             } else {
                 resolved = true;
                 if (sigWrapper && window.frameGeometryChanged) {
                     try { window.frameGeometryChanged.disconnect(sigWrapper); } catch (e) {}
                 }
-                print(`[Direktor Watchdog 2.0s] App '${window.caption}' refused tiled dimensions (rigid min-size or extreme Flatpak delay). Auto-falling back to FLOATING.`);
-                if (typeof Logger !== "undefined") Logger.warn("Watchdog", `App '${window.caption}' refused tiled dimensions. Falling back to floating.`);
-                self.registry.setState(window, "floating", true);
-                TileUtils.untileWindow(window);
-                try { TileUtils.centerAndOptimizeFloatingWindow(window); } catch (e) {}
-                self._retileWindowDesktops(window);
-                self.showNotification(`Float Fallback: App refused tile size`);
+                print(`[Direktor Watchdog ${Math.round((maxRetries * retryDelayMs)/1000)}s] App '${window.caption}' refused tiled dimensions (likely hit Wayland minimum size constraints). Accepting its overlapping geometry and leaving it in the tile grid.`);
+                if (typeof Logger !== "undefined") Logger.warn("Watchdog", `App '${window.caption}' refused tiled dimensions. Accepting overlap.`);
+                // We intentionally do NOT force it to floating anymore, as that ruins the layout for normal apps with rigid minimum sizes.
             }
         };
 
@@ -567,7 +608,7 @@ export class DirektorEngine {
         self.kwinSetTimeout(checkGeometryAndRetry, 100);
     }
 
-    toggleSplitDirection() {
+DirektorEngine.prototype.toggleSplitDirection = function() {
         const basis = workspace.activeWindow;
         if (!basis || !basis.normalWindow) return;
         const output = basis.output || workspace.activeScreen || workspace.screens[0];
@@ -586,7 +627,7 @@ export class DirektorEngine {
         }
     }
 
-    togglePseudoTile() {
+DirektorEngine.prototype.togglePseudoTile = function() {
         const basis = workspace.activeWindow;
         if (!basis || !basis.normalWindow) return;
         basis._direktorPseudo = !basis._direktorPseudo;
@@ -597,7 +638,7 @@ export class DirektorEngine {
         }
     }
 
-    resizeActiveWindow(dir) {
+DirektorEngine.prototype.resizeActiveWindow = function(dir) {
         const basis = workspace.activeWindow;
         if (!basis || !basis.normalWindow) return;
         const step = (this.configManager.config.general && typeof this.configManager.config.general.resizeStep === "number") ? this.configManager.config.general.resizeStep : 40;
@@ -643,7 +684,7 @@ export class DirektorEngine {
         }
     }
 
-    retileSurface(output, desktop, ignoreWin = null) {
+DirektorEngine.prototype.retileSurface = function(output, desktop, ignoreWin = null) {
         if (!output || !desktop) return;
         const surfaceId = TileUtils.computeSurfaceId(output, desktop);
         
@@ -665,7 +706,8 @@ export class DirektorEngine {
         }
     }
 
-    _retileSurfaceInternal(output, desktop, ignoreWin = null) {
+DirektorEngine.prototype._retileSurfaceInternal = function(output, desktop, ignoreWin = null) {
+        if (this.isPaused) return;
         if (!output || typeof output.name === "undefined") {
             output = workspace.activeScreen || (workspace.screens && workspace.screens.length > 0 ? workspace.screens[0] : null);
         }
@@ -687,13 +729,13 @@ export class DirektorEngine {
         for (let i = 0; i < allWin.length; i++) {
             const w = allWin[i];
             if (!w || w === ignoreWin || !w.normalWindow || w.specialWindow || w.minimized || w.lockScreen || w.splash || w.dock || w.fullScreen || (typeof w.layer === "number" && w.layer !== 2) || this.closingWindows.has(w) || /kscreenlocker|sddm|greeter|lock.*screen|screen.*lock|polkit/i.test(`${w.resourceClass || ''} ${w.caption || ''} ${w.resourceName || ''} ${w.appId || ''} ${w.windowRole || ''} ${w.windowType || ''}`)) {
-                print("[Direktor] Initial filter skipped " + (w ? (w.caption || w.resourceClass) : "null") + " (normal: " + (w ? w.normalWindow : "") + ", special: " + (w ? w.specialWindow : "") + ", min: " + (w ? w.minimized : "") + ", layer: " + (w ? w.layer : "") + ")");
+                // print("[Direktor] Initial filter skipped " + (w ? (w.caption || w.resourceClass) : "null") + " (normal: " + (w ? w.normalWindow : "") + ", special: " + (w ? w.specialWindow : "") + ", min: " + (w ? w.minimized : "") + ", layer: " + (w ? w.layer : "") + ")");
                 continue;
             }
             const isOnScreen = TileUtils.isWindowOnScreen(w, output);
             const isOnDesktop = TileUtils.isWindowOnDesktop(w, desktop);
             if (!isOnScreen || !isOnDesktop) {
-                print("[Direktor] Filtered out window: isOnScreen=" + isOnScreen + ", isOnDesktop=" + isOnDesktop + " for desk: " + (desktop ? desktop.name : "null"));
+                // print("[Direktor] Filtered out window: isOnScreen=" + isOnScreen + ", isOnDesktop=" + isOnDesktop + " for desk: " + (desktop ? desktop.name : "null"));
                 continue;
             }
 
@@ -709,8 +751,8 @@ export class DirektorEngine {
             }
         }
 
-        print("[Direktor] retileSurface(" + surfaceId + "): applying layout to " + windows.length + " windows");
-        print("[Direktor] SANITY CHECK 1");
+        // print("[Direktor] retileSurface(" + surfaceId + "): applying layout to " + windows.length + " windows");
+        // print("[Direktor] SANITY CHECK 1");
 
         let rootTile = null;
         try {
@@ -762,7 +804,7 @@ export class DirektorEngine {
 
         const layoutId = this.layoutManager.getActiveLayoutId(surfaceId);
         const layoutEngine = this.layoutManager.getLayout(layoutId);
-        print(`[Direktor] Layout execution check: layoutId='${layoutId}', layoutEngineExists=${!!layoutEngine}`);
+        // print(`[Direktor] Layout execution check: layoutId='${layoutId}', layoutEngineExists=${!!layoutEngine}`);
         if (layoutEngine && typeof layoutEngine.applyLayout === "function") {
             try {
                 layoutEngine.applyLayout(rootTile, ordered, output, surfaceId);
@@ -777,7 +819,7 @@ export class DirektorEngine {
         }
     }
 
-    retileScreen(output, ignoreWin = null) {
+DirektorEngine.prototype.retileScreen = function(output, ignoreWin = null) {
         if (!output) {
             output = workspace.activeScreen || (workspace.screens && workspace.screens.length > 0 ? workspace.screens[0] : null);
         }
@@ -785,7 +827,7 @@ export class DirektorEngine {
         this.retileSurface(output, workspace.currentDesktop, ignoreWin);
     }
 
-    retileAllScreens() {
+DirektorEngine.prototype.retileAllScreens = function() {
         if (workspace.screens) {
             for (let i = 0; i < workspace.screens.length; i++) {
                 this.retileScreen(workspace.screens[i]);
@@ -795,7 +837,7 @@ export class DirektorEngine {
         }
     }
 
-    retileAll() {
+DirektorEngine.prototype.retileAll = function() {
         if (workspace.screens && workspace.desktops) {
             for (let i = 0; i < workspace.screens.length; i++) {
                 for (let j = 0; j < workspace.desktops.length; j++) {
@@ -807,7 +849,11 @@ export class DirektorEngine {
         }
     }
 
-    cycleLayout() {
+DirektorEngine.prototype.cycleLayout = function() {
+        if (this.isPaused) {
+            this.showNotification("Engine Paused (Layout Locked)");
+            return;
+        }
         if (!workspace.activeScreen || !workspace.currentDesktop) return;
         const surfaceId = TileUtils.computeSurfaceId(workspace.activeScreen, workspace.currentDesktop);
         const nextLayout = this.layoutManager.cycleNextLayout(surfaceId);
@@ -815,7 +861,7 @@ export class DirektorEngine {
         this.retileSurface(workspace.activeScreen, workspace.currentDesktop);
     }
 
-    reloadConfiguration(force = true) {
+DirektorEngine.prototype.reloadConfiguration = function(force = true) {
         print("[Direktor] Executing supercharged hot-reload of all configurations and window rules...");
         const res = this.configManager.reloadFromKWin(force);
         this.registerShortcuts();
@@ -872,16 +918,15 @@ export class DirektorEngine {
         }
         this.showNotification("Direktor Configuration Hot-Reloaded");
     }
-}
 
 // Exported start function for QML declarative entrypoint (ui/main.qml)
-export function startDirektor(api = {}) {
+export function startDirektor(api) {
+    api = api || {};
     print("[Direktor] Starting engine via startDirektor...");
-    if (typeof console !== "undefined" && typeof console.warn === "function") {
-        console.warn("[Direktor] Starting engine via startDirektor...");
-    }
-    const ws = api.workspace || (typeof Workspace !== "undefined" ? Workspace : (typeof workspace !== "undefined" ? workspace : null));
-    const kw = api.kwin || (typeof KWin !== "undefined" ? KWin : null);
+    console.warn("[Direktor] Starting engine via startDirektor...");
+
+    var ws = api.workspace || (typeof Workspace !== "undefined" ? Workspace : (typeof workspace !== "undefined" ? workspace : null));
+    var kw = api.kwin || (typeof KWin !== "undefined" ? KWin : null);
 
     if (ws) {
         if (typeof workspace !== "undefined") workspace = ws;
@@ -893,7 +938,7 @@ export function startDirektor(api = {}) {
         ws._direktorPopup = api.popupDialog;
         ws._direktorMakeQRect = function(x, y, w, h) {
             if (typeof Qt !== "undefined" && typeof Qt.rect === "function") return Qt.rect(x, y, w, h);
-            return { x, y, width: w, height: h };
+            return { x: x, y: y, width: w, height: h };
         };
     }
     if (kw) {
@@ -914,7 +959,7 @@ export function startDirektor(api = {}) {
         if (typeof globalThis !== "undefined") globalThis.assert = assertFn;
     }
 
-    const instance = new DirektorEngine();
+    var instance = new DirektorEngine();
     if (ws) ws._direktorEngine = instance;
     if (typeof Workspace !== "undefined") Workspace._direktorEngine = instance;
     if (typeof workspace !== "undefined") workspace._direktorEngine = instance;

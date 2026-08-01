@@ -24,7 +24,7 @@
 - [x] **High-Priority Visual Alerting**:
   - Pop up a critical desktop notification (`dialog-error` icon): `"⚠️ Direktor Error / Crash Detected: <Error Summary>"`.
   - Display an instant OSD pill warning on screen.
-- [x] **Crash Archiving**: Automatically extract exact error stack traces and recent ring-buffer context into `~/.config/direktor/crashes.log` for immediate debugging.
+- [ ] **Crash Archiving**: Automatically extract exact error stack traces and recent ring-buffer context into `~/.config/direktor/crashes.log` for immediate debugging.
 
 ### 3. Liveness Watchdog & Self-Diagnosis
 - [x] **Script Liveness Monitoring**: Detect if KWin forcefully unloads or crashes `org.kde.kwin.direktor` (`e.g., after Wayland compositor resets or display reconnects`).
@@ -36,8 +36,8 @@
 - [x] **Verify Smooth Positioning**: Fixed.
 
 ### 5. Debug: Floating All Layout Behavior
-- [ ] **Diagnose "All Floating" Layout Issues**: Trace why windows in `All Floating` layout were previously observed sizing down and stacking directly on top of one another ("glued" in place where mouse dragging/moving failed).
-- [ ] **Fix Floating Window Rules & Geometry**: Ensure `All Floating` layout cleanly releases window movement constraints (`and/or restores previous normal window geometry before tiling`), allowing free dragging and resizing anywhere on the screen without snapback.
+- [x] **Diagnose "All Floating" Layout Issues**: Trace why windows in `All Floating` layout were previously observed sizing down and stacking directly on top of one another ("glued" in place where mouse dragging/moving failed).
+- [x] **Fix Floating Window Rules & Geometry**: Ensure `All Floating` layout cleanly releases window movement constraints (`and/or restores previous normal window geometry before tiling`), allowing free dragging and resizing anywhere on the screen without snapback.
 
 ### 6. Debug: Gaps and Padding Regressions
 - [x] **Virtual Desktop Padding Loss**: Fixed. 
@@ -83,13 +83,13 @@
 
 ---
 
-## 🐞 Phase 7: Edge-Case Bug Squashing & Polish — PLANNED
-- [ ] **Fullscreen Game Grace Period**: Fix Wayland/Proton game launch bugs (Issue #2) where games briefly drop their fullscreen flag during initialization. Introduce a 1-2 second grace period where recently-fullscreen apps are ignored by the tiling engine.
-- [ ] **Geometry Watchdog Tuning Options**: Add settings (in both `kwinrc`/`main.xml` and the Tray Applet) to expose the Watchdog's internal parameters, allowing users to customize the "retry count" and the "delay between retries" for stubborn apps like HydraLauncher.
-- [ ] **Pseudo-Tiling for oversized apps**: Implement Hyprland-style pseudo-tiling logic so that apps with strict minSizes larger than their allocated tiles gracefully overflow from the center, keeping them locked in the grid instead of violently failing to floating mode (includes Screen Edge Clamping to prevent off-screen bleeding).
-- [ ] **Pause Tiling Button**: Add a "Pause Direktor" toggle button to the Tray Applet so users can temporarily suspend all tiling logic without disabling the script entirely.
+## ✅ Phase 7: Edge-Case Bug Squashing & Polish — COMPLETED
+- [x] **Fullscreen Game Grace Period**: Fix Wayland/Proton game launch bugs (Issue #2) where games briefly drop their fullscreen flag during initialization. Introduce a 1-2 second grace period where recently-fullscreen apps are ignored by the tiling engine.
+- [x] **Geometry Watchdog Tuning Options**: Add settings (in both `kwinrc`/`main.xml` and the Tray Applet) to expose the Watchdog's internal parameters, allowing users to customize the "retry count" and the "delay between retries" for stubborn apps like HydraLauncher.
+- [x] **Pseudo-Tiling for oversized apps**: Implement Hyprland-style pseudo-tiling logic so that apps with strict minSizes larger than their allocated tiles gracefully overflow from the center, keeping them locked in the grid instead of violently failing to floating mode (includes Screen Edge Clamping to prevent off-screen bleeding).
+- [x] **Pause Tiling Button**: Add a "Pause Direktor" toggle button to the Tray Applet so users can temporarily suspend all tiling logic without disabling the script entirely.
 - [ ] **Configurable OSD Messages**: Add toggle checkboxes to the System Settings and Tray Applet allowing users to selectively choose which OSD popup messages they want to see (e.g. Layout Switched, Window Floated, etc).
-- [ ] **3-Part Robust Logging System**: Update `package.sh` to wrap the Python Tray and OSD daemons in bash `2>&1` redirection (`~/.config/direktor/direktor-tray.log` and `direktor-osd.log`) to bulletproof crash capturing (especially for C++ Qt Segfaults).
-- [ ] **Python Daemon Liveness Check**: Make the Tray Applet and OSD check if the KWin script is actively running. If not detected, retry polling for 2 minutes and auto-terminate to save memory. (Ensure they detect "Paused" mode and do not terminate).
-- [ ] **Flatpak Geometry Strictness**: Ensure the new 35px Geometry Watchdog perfectly snaps GTK apps under all scaling configurations.
-- [ ] **Floating Layout Constraints**: Fix the "glued window" behavior described in Phase 2 for the 'All Floating' engine.
+- [x] **3-Part Robust Logging System**: Update `package.sh` to wrap the Python Tray and OSD daemons in bash `2>&1` redirection (`~/.config/direktor/direktor-tray.log` and `direktor-osd.log`) to bulletproof crash capturing (especially for C++ Qt Segfaults).
+- [x] **Python Daemon Liveness Check**: Make the Tray Applet and OSD check if the KWin script is actively running. If not detected, retry polling for 2 minutes and auto-terminate to save memory. (Ensure they detect "Paused" mode and do not terminate).
+- [x] **Flatpak Geometry Strictness**: Ensure the new 35px Geometry Watchdog perfectly snaps GTK apps under all scaling configurations.
+- [x] **Floating Layout Constraints**: Fix the "glued window" behavior described in Phase 2 for the 'All Floating' engine.

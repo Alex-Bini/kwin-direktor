@@ -14,15 +14,15 @@
  *    - Up / Down: prioritize the left (leftmost) window (geometry.x ascending).
  */
 
-export class DirectionalEngine {
-    constructor(direktorEngine) {
-        this.engine = direktorEngine;
-    }
+export function DirectionalEngine(direktorEngine) {
+    this.engine = direktorEngine;
+}
+
 
     /**
      * Checks if two ranges [aMin, aMax] and [bMin, bMax] overlap.
      */
-    static overlap(aMin, aMax, bMin, bMax) {
+DirectionalEngine.overlap = function(aMin, aMax, bMin, bMax) {
         return Math.max(aMin, bMin) < Math.min(aMax, bMax);
     }
 
@@ -32,7 +32,7 @@ export class DirectionalEngine {
      * @param {KWin.Window} basis
      * @returns {KWin.Window[]}
      */
-    getWindowsInContext(basis) {
+DirectionalEngine.prototype.getWindowsInContext = function(basis) {
         if (!basis || !basis.normalWindow) return [];
         const allWin = TileUtils.getWorkspaceWindows();
         const basisOutput = basis.output || workspace.activeScreen || workspace.screens[0];
@@ -66,12 +66,12 @@ export class DirectionalEngine {
      * @param {string} dir
      * @returns {KWin.Window|null}
      */
-    getNeighborByDirection(basis, dir) {
+DirectionalEngine.prototype.getNeighborByDirection = function(basis, dir) {
         if (!basis || !basis.frameGeometry) return null;
         const candidates = this.getWindowsInContext(basis);
         if (candidates.length === 0) return null;
 
-        const bg = basis.frameGeometry;
+        const bg = basis._direktorCellRect || basis.frameGeometry;
         const bgMaxX = bg.x + bg.width;
         const bgMaxY = bg.y + bg.height;
 
@@ -101,7 +101,7 @@ export class DirectionalEngine {
         // Stage 1: Strictly directional candidates that overlap along the orthogonal axis
         const overlapping = candidates.filter(w => {
             if (!w.frameGeometry) return false;
-            const fg = w.frameGeometry;
+            const fg = w._direktorCellRect || w.frameGeometry;
             const fgMaxX = fg.x + fg.width;
             const fgMaxY = fg.y + fg.height;
 
@@ -124,7 +124,7 @@ export class DirectionalEngine {
         if (pool.length === 0) {
             pool = candidates.filter(w => {
                 if (!w.frameGeometry) return false;
-                const fg = w.frameGeometry;
+                const fg = w._direktorCellRect || w.frameGeometry;
                 const fgMaxX = fg.x + fg.width;
                 const fgMaxY = fg.y + fg.height;
 
@@ -144,7 +144,7 @@ export class DirectionalEngine {
         // Find the closest distance along the primary axis
         let minEdgeDist = Infinity;
         for (const w of pool) {
-            const fg = w.frameGeometry;
+            const fg = w._direktorCellRect || w.frameGeometry;
             const fgMaxX = fg.x + fg.width;
             const fgMaxY = fg.y + fg.height;
 
@@ -161,7 +161,7 @@ export class DirectionalEngine {
 
         // Filter to all candidates within a narrow tolerance (e.g. 24px) of the closest column/row
         const closestCandidates = pool.filter(w => {
-            const fg = w.frameGeometry;
+            const fg = w._direktorCellRect || w.frameGeometry;
             const fgMaxX = fg.x + fg.width;
             const fgMaxY = fg.y + fg.height;
 
@@ -179,9 +179,9 @@ export class DirectionalEngine {
         // Up / Down: prioritize left (leftmost) window -> sort by geometry.x ascending
         closestCandidates.sort((a, b) => {
             if (vertical) {
-                return (a.frameGeometry.x || 0) - (b.frameGeometry.x || 0);
+                return ((a._direktorCellRect || a.frameGeometry).x || 0) - ((b._direktorCellRect || b.frameGeometry).x || 0);
             } else {
-                return (a.frameGeometry.y || 0) - (b.frameGeometry.y || 0);
+                return ((a._direktorCellRect || a.frameGeometry).y || 0) - ((b._direktorCellRect || b.frameGeometry).y || 0);
             }
         });
 
@@ -193,7 +193,7 @@ export class DirectionalEngine {
      * Restricts focus strictly to the current output and virtual desktop.
      * @param {string} dir "left", "right", "up", "down"
      */
-    focusDirection(dir) {
+DirectionalEngine.prototype.focusDirection = function(dir) {
         const basis = workspace.activeWindow;
         if (!basis || !basis.normalWindow) return;
 
@@ -212,7 +212,7 @@ export class DirectionalEngine {
      * For tiled windows, swaps positions with the adjacent neighbor and retiles instantly.
      * @param {string} dir "left", "right", "up", "down"
      */
-    moveDirection(dir) {
+DirectionalEngine.prototype.moveDirection = function(dir) {
         const basis = workspace.activeWindow;
         if (!basis || !basis.normalWindow) return;
 
@@ -271,4 +271,3 @@ export class DirectionalEngine {
         }
         workspace.activeWindow = basis;
     }
-}

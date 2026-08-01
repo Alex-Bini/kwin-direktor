@@ -6,7 +6,7 @@ After=graphical-session.target plasma-kwin_wayland.service
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/direktor-osd
+ExecStart=/bin/bash -c "mkdir -p %h/.config/direktor && exec %h/.local/bin/direktor-osd >> %h/.config/direktor/direktor-osd.log 2>&1"
 Restart=on-failure
 RestartSec=2s
 StandardOutput=null

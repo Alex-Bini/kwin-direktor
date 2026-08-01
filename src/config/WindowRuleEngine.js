@@ -22,9 +22,7 @@ export class WindowRuleEngine {
     evaluateWindow(window) {
         if (!window) return "ignore";
 
-        if (typeof this.configManager.reloadFromKWin === "function") {
-            this.configManager.reloadFromKWin(false);
-        }
+        // Config reload should only happen on configChanged signals, not every window evaluation.
 
         // Built-in safety checks from Krohnkite & Karousel: skip non-normal, special, unmanaged, internal (pid <= 0), popups, lock/splash, dock, and full-screen geometries
         if (!window || !window.normalWindow || window.specialWindow || window.splash || window.lockScreen || window.onScreenDisplay || window.popupWindow || window.dock) {
@@ -66,7 +64,6 @@ export class WindowRuleEngine {
             const useRegex = !!rulesConfig.useRegexOverrides;
             if (this.matchesConfigList(fullIdentity, rulesConfig.ignoreClasses, useRegex) ||
                 this.matchesConfigList(caption, rulesConfig.ignoreTitles, useRegex)) {
-                console.log(`[Direktor RuleEngine] evaluateWindow: caption="${caption}", class="${window.resourceClass || ''}" -> IGNORE via rulesConfig.ignoreClasses/Titles`);
                 return "ignore";
             }
         }
@@ -75,18 +72,15 @@ export class WindowRuleEngine {
         for (const rule of rules) {
             if (this.matchesRule(window, rule.match)) {
                 const action = rule.action || "tile";
-                console.log(`[Direktor RuleEngine] evaluateWindow: caption="${caption}" -> ${action.toUpperCase()} via JSON rules`);
                 return action;
             }
         }
 
         // By default, only true modal or transient child dialogs float; normal app windows tile
         if (window.modal || (window.dialog && window.transient)) {
-            console.log(`[Direktor RuleEngine] evaluateWindow: caption="${caption}" -> FLOAT (modal/transient dialog)`);
             return "float";
         }
 
-        console.log(`[Direktor RuleEngine] evaluateWindow: caption="${caption}", class="${window.resourceClass || ''}", fullIdentity="${fullIdentity}" -> TILE (default). ignoreClasses="${rulesConfig ? rulesConfig.ignoreClasses : 'null'}"`);
         return "tile";
     }
 

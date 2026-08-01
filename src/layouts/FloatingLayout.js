@@ -32,7 +32,8 @@ export class FloatingLayout extends LayoutEngine {
                         if (entry && entry.floatingGeometry) savedGeo = entry.floatingGeometry;
                     }
                 } catch (e) {}
-                TileUtils.centerAndOptimizeFloatingWindow(window, savedGeo, staggerCount * 32);
+                const cascadeOffset = this.engine && this.engine.configManager ? (this.engine.configManager.config.general.floatingCascadeOffset || 32) : 32;
+                TileUtils.centerAndOptimizeFloatingWindow(window, savedGeo, staggerCount * cascadeOffset);
                 staggerCount++;
             }
         }

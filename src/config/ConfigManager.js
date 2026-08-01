@@ -13,6 +13,10 @@ export const DEFAULT_CONFIG = {
         padding: 8,                // Global padding between windows and screen edges in px
         animationDuration: 300,    // Window animation duration in milliseconds
         resizeStep: 40,            // Step size for window resize actions in px
+        moveStep: 60,              // Step size for window move actions in px
+        watchdogMaxRetries: 20,    // Max number of retries for the geometry watchdog
+        watchdogRetryDelayMs: 100, // Delay in ms between watchdog retries
+        floatingCascadeOffset: 32, // Offset in px for cascading floating windows
         dwindleOuterGapTop: 8,     // Dwindle top outer screen gap in px
         dwindleOuterGapBottom: 8,  // Dwindle bottom outer screen gap in px
         dwindleOuterGapLeft: 8,    // Dwindle left outer screen gap in px
@@ -148,7 +152,12 @@ export class ConfigManager {
                 return typeof KWin !== "undefined" && typeof KWin.readConfig === "function" ? KWin.readConfig(key, defVal) : defVal;
             };
 
-            this.config.general.defaultLayout = String(getVal("defaultLayout", "defaultLayout", "dwindle"));
+            let rawLayout = String(getVal("defaultLayout", "defaultLayout", "dwindle"));
+            if (rawLayout === "0") rawLayout = "dwindle";
+            else if (rawLayout === "1") rawLayout = "niri-scrollable";
+            else if (rawLayout === "2") rawLayout = "master-stack";
+            else if (rawLayout === "3") rawLayout = "floating";
+            this.config.general.defaultLayout = rawLayout;
             this.config.general.gapMode = parseInt(getVal("gapMode", "gapMode", 0), 10);
             this.config.general.gaps = {};
             this.config.general.gaps.globalPadding = parseInt(getVal("globalPadding", "globalPadding", 8), 10);
@@ -164,6 +173,10 @@ export class ConfigManager {
             this.config.general.animationDuration = parseInt(getVal("animationDuration", "animationDuration", 300), 10);
             this.config.general.morphingLaunchDelay = parseInt(getVal("morphingLaunchDelay", "morphingLaunchDelay", 320), 10);
             this.config.general.resizeStep = parseInt(getVal("resizeStep", "resizeStep", 40), 10);
+            this.config.general.moveStep = parseInt(getVal("moveStep", "moveStep", 60), 10);
+            this.config.general.watchdogMaxRetries = parseInt(getVal("watchdogMaxRetries", "watchdogMaxRetries", 20), 10);
+            this.config.general.watchdogRetryDelayMs = parseInt(getVal("watchdogRetryDelayMs", "watchdogRetryDelayMs", 100), 10);
+            this.config.general.floatingCascadeOffset = parseInt(getVal("floatingCascadeOffset", "floatingCascadeOffset", 32), 10);
             this.config.general.startFloatingDefault = (getVal("startFloatingDefault", "startFloatingDefault", false) === true);
             this.config.general.cycleDwindle = (getVal("cycleDwindle", "cycleDwindle", true) === true);
             this.config.general.cycleColumns = (getVal("cycleColumns", "cycleColumns", true) === true);
@@ -223,7 +236,7 @@ export class ConfigManager {
                         if (action.toLowerCase() === "this.window.togglefloat") action = "toggle_floating";
                         if (action.toLowerCase() === "this.layout.cycle") action = "cycle_layout";
                         const id = "direktor_custom_" + name.toLowerCase().replace(/[^a-z0-9_]/g, "_");
-                        parsedBindings.push({ id, name: "Direktor: " + name, action, message });
+                        parsedBindings.push({ id: id, name: "Direktor: " + name, action: action, message: message });
                     }
                 }
             }

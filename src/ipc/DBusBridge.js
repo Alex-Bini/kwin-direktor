@@ -82,6 +82,18 @@ export class DBusBridge {
         this.registerAction("increase_height", () => { if (this.engine && typeof this.engine.resizeActiveWindow === "function") this.engine.resizeActiveWindow("down"); });
         this.registerAction("decrease_height", () => { if (this.engine && typeof this.engine.resizeActiveWindow === "function") this.engine.resizeActiveWindow("up"); });
 
+        this.registerAction("toggle_pause", () => {
+            if (this.engine) {
+                this.engine.isPaused = !this.engine.isPaused;
+                if (typeof this.engine.showNotification === "function") {
+                    this.engine.showNotification(this.engine.isPaused ? "Tiling Engine: Paused" : "Tiling Engine: Resumed");
+                }
+                if (!this.engine.isPaused && typeof this.engine.retileAllScreens === "function") {
+                    this.engine.retileAllScreens();
+                }
+            }
+        });
+
         // Explicitly set layout for current screen
         this.registerAction("set_layout", (layoutId) => {
             const activeWin = workspace.activeWindow;

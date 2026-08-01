@@ -66,6 +66,16 @@
             </layout>
            </item>
            
+           <item><widget class="QLabel" name="titleWatchdog"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Geometry Watchdog&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
+           <item>
+            <layout class="QFormLayout" name="formLayoutGeneralWatchdog">
+             <item row="0" column="0"><widget class="QLabel" name="labelWatchdogRetries"><property name="text"><string>Max Retries (Ticks):</string></property></widget></item>
+             <item row="0" column="1"><widget class="QSpinBox" name="kcfg_watchdogMaxRetries"><property name="minimum"><number>1</number></property><property name="maximum"><number>100</number></property></widget></item>
+             <item row="1" column="0"><widget class="QLabel" name="labelWatchdogDelay"><property name="text"><string>Retry Delay (ms):</string></property></widget></item>
+             <item row="1" column="1"><widget class="QSpinBox" name="kcfg_watchdogRetryDelayMs"><property name="maximum"><number>1000</number></property></widget></item>
+            </layout>
+           </item>
+           
            <item><widget class="QLabel" name="titleDwindle"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Dwindle Layout&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
            <item><widget class="QLabel" name="labelDwindlePlaceholder"><property name="text"><string>&lt;i&gt;No specific Dwindle settings available yet.&lt;/i&gt;</string></property></widget></item>
            
@@ -92,7 +102,12 @@
            <item><widget class="QLabel" name="labelMasterPlaceholder"><property name="text"><string>&lt;i&gt;No specific Master Stack settings available yet.&lt;/i&gt;</string></property></widget></item>
            
            <item><widget class="QLabel" name="titleFloating"><property name="text"><string>&lt;h2&gt;&lt;b&gt;Floating Layout&lt;/b&gt;&lt;/h2&gt;</string></property></widget></item>
-           <item><widget class="QLabel" name="labelFloatingPlaceholder"><property name="text"><string>&lt;i&gt;No specific Floating settings available yet.&lt;/i&gt;</string></property></widget></item>
+           <item>
+            <layout class="QFormLayout" name="formLayoutGeneralFloating">
+             <item row="0" column="0"><widget class="QLabel" name="labelFloatingCascade"><property name="text"><string>Cascade Offset (px):</string></property></widget></item>
+             <item row="0" column="1"><widget class="QSpinBox" name="kcfg_floatingCascadeOffset"><property name="maximum"><number>200</number></property></widget></item>
+            </layout>
+           </item>
            
            <item><spacer name="verticalSpacerGeneral"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property></spacer></item>
           </layout>

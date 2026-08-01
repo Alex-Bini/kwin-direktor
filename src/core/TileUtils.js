@@ -12,9 +12,10 @@
 export const DIRECTION_HORIZONTAL = 0; // Left | Right side-by-side split
 export const DIRECTION_VERTICAL = 1;   // Top / Bottom stack split
 
-export class TileUtils {
-    static getWorkspaceWindows() {
-        print("[Direktor] STEP TILEUTILS 1: inside getWorkspaceWindows");
+export const TileUtils = {};
+
+TileUtils.getWorkspaceWindows = function() {
+
         if (typeof workspace === "undefined" || !workspace) return [];
         const candidates = [
             { name: "windowList()", list: (typeof workspace.windowList === "function" ? (function() { try { return workspace.windowList(); } catch (e) { return null; } })() : null) },
@@ -50,12 +51,10 @@ export class TileUtils {
                 bestName = item.name;
             }
         }
-        if (typeof Logger !== "undefined") Logger.info("TileUtils", "[Direktor Workspace Check] " + diag.join(", ") + " -> selected: " + bestName + " (" + bestArr.length + " windows)");
-        print("[Direktor] STEP TILEUTILS 2: returning " + bestArr.length + " windows from " + bestName + " (diag: " + diag.join(", ") + ")");
         return bestArr;
     }
 
-    static isWindowOnDesktop(w, currentDesktop) {
+TileUtils.isWindowOnDesktop = function(w, currentDesktop) {
         if (!w) return false;
         if (!currentDesktop || w.onAllDesktops) return true;
         const cdId = currentDesktop.id || currentDesktop.name || (typeof currentDesktop.desktop !== "undefined" ? currentDesktop.desktop : currentDesktop);
@@ -74,7 +73,7 @@ export class TileUtils {
         return false;
     }
 
-    static isWindowOnScreen(w, output) {
+TileUtils.isWindowOnScreen = function(w, output) {
         if (!w) return false;
         if (typeof workspace !== "undefined" && workspace.screens && workspace.screens.length <= 1) return true;
         if (!output) return true;
@@ -93,7 +92,7 @@ export class TileUtils {
         return winOutName === outName;
     }
 
-    static computeSurfaceId(output, currentDesktop) {
+TileUtils.computeSurfaceId = function(output, currentDesktop) {
         let outName = "default";
         if (output) {
             if (output.name) outName = output.name;
@@ -120,7 +119,7 @@ export class TileUtils {
      * @param {KWin.Tile} tile Target tile to split
      * @param {number} direction DIRECTION_HORIZONTAL (0) or DIRECTION_VERTICAL (1)
      */
-    static splitTile(tile, direction) {
+TileUtils.splitTile = function(tile, direction) {
         if (!tile) return;
         tile.split(direction);
     }
@@ -130,7 +129,7 @@ export class TileUtils {
      * @param {KWin.Tile} tile Root or parent tile
      * @returns {KWin.Tile[]} Array of leaf tiles
      */
-    static getLeafTiles(tile) {
+TileUtils.getLeafTiles = function(tile) {
         if (!tile) return [];
         if (!tile.isLayout || !tile.childTiles || tile.childTiles.length === 0) {
             return [tile];
@@ -150,7 +149,7 @@ export class TileUtils {
      * Resets a root tile by removing all child splits so layout engines can rebuild cleanly.
      * @param {KWin.Tile} rootTile
      */
-    static resetRootTile(rootTile) {
+TileUtils.resetRootTile = function(rootTile) {
         if (!rootTile || !rootTile.childTiles) return;
         // In KWin Plasma 6, removing child tiles or resetting can be done by iteratively
         // removing children or re-initializing the root tile structure.
@@ -170,7 +169,7 @@ export class TileUtils {
      * @param {KWin.Window} window
      * @param {KWin.Tile|null} tile
      */
-    static assignWindowToTile(window, tile) {
+TileUtils.assignWindowToTile = function(window, tile) {
         if (!window || !window.normalWindow) return;
         if (window.tile !== tile) {
             window.tile = tile;
@@ -184,10 +183,13 @@ export class TileUtils {
      * Floats a window by detaching it from any KWin tile.
      * @param {KWin.Window} window
      */
-    static untileWindow(window) {
+TileUtils.untileWindow = function(window) {
         if (!window) return;
         if (window.tile !== null) {
             window.tile = null;
+        }
+        if (typeof window.quickTileMode !== "undefined") {
+            window.quickTileMode = 0; // QuickTileFlag.None
         }
     }
 
@@ -197,7 +199,7 @@ export class TileUtils {
      * @param {KWin.Window} window
      * @param {Object} [savedGeometry]
      */
-    static centerAndOptimizeFloatingWindow(window, savedGeometry, staggerOffset = 0) {
+TileUtils.centerAndOptimizeFloatingWindow = function(window, savedGeometry, staggerOffset = 0) {
         if (!window || !window.normalWindow) return;
         const output = window.output || workspace.activeScreen || workspace.screens[0];
         const area = TileUtils.getUsableArea(output, window);
@@ -246,7 +248,7 @@ export class TileUtils {
         }
     }
 
-    static getUsableArea(output, sampleWin) {
+TileUtils.getUsableArea = function(output, sampleWin) {
         // Option 0 is KWin::PlacementArea (and Option 2 is KWin::MaximizeArea).
         // Both exclude static struts (static panels) while NOT excluding auto-hide panels.
         const opt = (typeof KWin !== "undefined" && typeof KWin.PlacementArea !== "undefined") ? KWin.PlacementArea : 0;
@@ -265,8 +267,8 @@ export class TileUtils {
         return (output && output.geometry) ? output.geometry : { x: 0, y: 0, width: 1920, height: 1080 };
     }
 
-    static assignWindowRect(window, rect) {
-        print(`[Direktor TileUtils] assignWindowRect CALLED for window: ${window ? window.caption : 'null'} with rect: ${JSON.stringify(rect)}`);
+TileUtils.assignWindowRect = function(window, rect) {
+
         if (!window || !window.normalWindow || !rect) return;
 
         const toQRect = (x, y, width, height) => {
@@ -281,7 +283,7 @@ export class TileUtils {
                     return Qt.rect(x, y, width, height);
                 }
             } catch (e) {}
-            return { x, y, width, height };
+            return { x: x, y: y, width: width, height: height };
         };
 
         if (window._direktorPseudo) {
@@ -302,6 +304,7 @@ export class TileUtils {
                 TileUtils.untileWindow(window);
                 window.frameGeometry = targetGeo;
             }
+            window._direktorCellRect = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
             return;
         }
 
@@ -325,11 +328,43 @@ export class TileUtils {
             }
         }
 
-        // Strictly prevent windows from exceeding their assigned Dwindle cell boundary to eliminate overlapping terminals
-        w = Math.min(w, Math.max(20, rect.width));
-        h = Math.min(h, Math.max(20, rect.height));
+        let isOversized = false;
+        window._direktorCellRect = { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+        if (window.minSize) {
+            if (typeof window.minSize.width === "number" && window.minSize.width > rect.width) isOversized = true;
+            if (typeof window.minSize.height === "number" && window.minSize.height > rect.height) isOversized = true;
+        }
 
-        const targetGeo = toQRect(rect.x, rect.y, w, h);
+        if (!isOversized) {
+            w = Math.min(w, Math.max(20, rect.width));
+            h = Math.min(h, Math.max(20, rect.height));
+        }
+
+        let targetX = rect.x;
+        let targetY = rect.y;
+
+        // If the window is forced to be larger than its cell due to minSize, pseudo-tile it (center it over the cell)
+        if (w > rect.width) {
+            targetX = rect.x - (w - rect.width) / 2;
+        }
+        if (h > rect.height) {
+            targetY = rect.y - (h - rect.height) / 2;
+        }
+
+        // Screen Edge Clamping (Hyprland Style)
+        // Ensure the window does not bleed off the active screen
+        const output = window.output || workspace.activeScreen || workspace.screens[0];
+        if (output && output.geometry) {
+            const screenX = output.geometry.x;
+            const screenY = output.geometry.y;
+            const screenW = output.geometry.width;
+            const screenH = output.geometry.height;
+
+            targetX = Math.max(screenX, Math.min(targetX, screenX + screenW - w));
+            targetY = Math.max(screenY, Math.min(targetY, screenY + screenH - h));
+        }
+
+        const targetGeo = toQRect(targetX, targetY, w, h);
         const lastTarget = window._direktorLastTargetRect;
         const targetChanged = !lastTarget || lastTarget.x !== targetGeo.x || lastTarget.y !== targetGeo.y || lastTarget.width !== targetGeo.width || lastTarget.height !== targetGeo.height;
         window._direktorLastTargetRect = { x: targetGeo.x, y: targetGeo.y, width: targetGeo.width, height: targetGeo.height };
@@ -344,14 +379,14 @@ export class TileUtils {
             TileUtils.untileWindow(window);
             try {
                 window.frameGeometry = targetGeo;
-                print(`[Direktor TileUtils] Set frameGeometry to (${targetGeo.x},${targetGeo.y},${targetGeo.width}x${targetGeo.height})`);
+
             } catch (e) {
-                print(`[Direktor TileUtils] ERROR setting frameGeometry: ${e}`);
+                print("[Direktor TileUtils] ERROR setting frameGeometry: " + e);
             }
         }
     }
 
-    static getLongestEdgeDirection(tile) {
+TileUtils.getLongestEdgeDirection = function(tile) {
         if (!tile || !tile.relativeGeometry) return DIRECTION_HORIZONTAL;
         const geom = tile.relativeGeometry;
         return geom.width >= geom.height ? DIRECTION_HORIZONTAL : DIRECTION_VERTICAL;
@@ -363,7 +398,7 @@ export class TileUtils {
      * If so, swaps their layoutPosition in the registry.
      * @returns {boolean} true if a swap occurred
      */
-    static swapWindowsIfDropped(draggedWindow, windows, registry) {
+TileUtils.swapWindowsIfDropped = function(draggedWindow, windows, registry) {
         if (!draggedWindow || !windows || !registry) return false;
         
         try {
@@ -402,5 +437,4 @@ export class TileUtils {
         return false;
     }
 
-}
 TileUtils.perDesktopIsolation = true;

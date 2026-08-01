@@ -133,7 +133,8 @@ export class ScrollableNiriLayout extends LayoutEngine {
                 x: currentX,
                 y: safeArea.y,
                 width: w,
-                height: safeArea.height
+                height: safeArea.height,
+                allowOffscreenX: true
             });
             
             currentX += w + innerHoriz;

@@ -352,7 +352,7 @@ TileUtils.assignWindowRect = function(window, rect) {
         }
 
         // Screen Edge Clamping (Hyprland Style)
-        // Ensure the window does not bleed off the active screen
+        // Ensure the window does not bleed off the active screen (unless explicitly allowed by the layout engine, like Niri)
         const output = window.output || workspace.activeScreen || workspace.screens[0];
         if (output && output.geometry) {
             const screenX = output.geometry.x;
@@ -360,8 +360,12 @@ TileUtils.assignWindowRect = function(window, rect) {
             const screenW = output.geometry.width;
             const screenH = output.geometry.height;
 
-            targetX = Math.max(screenX, Math.min(targetX, screenX + screenW - w));
-            targetY = Math.max(screenY, Math.min(targetY, screenY + screenH - h));
+            if (!rect.allowOffscreenX) {
+                targetX = Math.max(screenX, Math.min(targetX, screenX + screenW - w));
+            }
+            if (!rect.allowOffscreenY) {
+                targetY = Math.max(screenY, Math.min(targetY, screenY + screenH - h));
+            }
         }
 
         const targetGeo = toQRect(targetX, targetY, w, h);

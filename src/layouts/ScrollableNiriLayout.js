@@ -14,7 +14,7 @@ export class ScrollableNiriLayout extends LayoutEngine {
         super("niri-scrollable", "Scrollable Columns (Niri)");
         // Map: "outputName_desktopId" -> current left-most visible column index (or scroll pixel offset)
         this.scrollOffsets = new Map();
-        // Map: window.internalId -> custom user-defined width percentage (0.1 to 1.0)
+        // Map: String(window.internalId) -> custom user-defined width percentage (0.1 to 1.0)
         this.customWidths = new Map();
     }
 
@@ -53,8 +53,8 @@ export class ScrollableNiriLayout extends LayoutEngine {
         // Calculate custom and default widths for every window
         const colWidths = windows.map(w => {
             let width = 0;
-            if (this.customWidths.has(w.internalId)) {
-                width = Math.floor(safeArea.width * this.customWidths.get(w.internalId));
+            if (this.customWidths.has(String(w.internalId))) {
+                width = Math.floor(safeArea.width * this.customWidths.get(String(w.internalId)));
             } else if (windows.length === 1) {
                 width = Math.floor(safeArea.width * widthOne);
             } else if (windows.length === 2) {
@@ -174,14 +174,14 @@ export class ScrollableNiriLayout extends LayoutEngine {
                             entryB.layoutPosition = tempPos;
                             
                             // Swap custom widths (so they swap sizes as well)
-                            const widthA = this.customWidths.get(window.internalId);
-                            const widthB = this.customWidths.get(target.internalId);
+                            const widthA = this.customWidths.get(String(window.internalId));
+                            const widthB = this.customWidths.get(String(target.internalId));
                             
-                            if (widthA !== undefined) this.customWidths.set(target.internalId, widthA);
-                            else this.customWidths.delete(target.internalId);
+                            if (widthA !== undefined) this.customWidths.set(String(target.internalId), widthA);
+                            else this.customWidths.delete(String(target.internalId));
                             
-                            if (widthB !== undefined) this.customWidths.set(window.internalId, widthB);
-                            else this.customWidths.delete(window.internalId);
+                            if (widthB !== undefined) this.customWidths.set(String(window.internalId), widthB);
+                            else this.customWidths.delete(String(window.internalId));
 
                             print(`[Direktor Niri] Swapped places and sizes between '${window.caption}' and '${target.caption}'`);
                             didSwap = true;
@@ -197,14 +197,19 @@ export class ScrollableNiriLayout extends LayoutEngine {
             const area = TileUtils.getUsableArea(output, window);
             if (area && area.width > 0) {
                 // Calculate difference to confirm it was an actual resize
-                const expectedW = this.customWidths.get(window.internalId) 
-                    ? Math.floor(area.width * this.customWidths.get(window.internalId))
+                const expectedW = this.customWidths.get(String(window.internalId)) 
+                    ? Math.floor(area.width * this.customWidths.get(String(window.internalId)))
                     : (windows.length === 1 ? area.width : (windows.length === 2 ? Math.floor(area.width / 2) : Math.floor(area.width * 0.40)));
                 
                 if (Math.abs(geom.width - expectedW) > 10) {
                     let newRatio = geom.width / area.width;
                     newRatio = Math.max(0.1, Math.min(newRatio, 1.0));
-                    this.customWidths.set(window.internalId, newRatio);
+                    this.customWidths.set(String(window.internalId), newRatio);
+                    
+                    // Clear the watchdog's settled width cache, because the user just manually resized it
+                    if (window._direktorMinEffectiveWidth) {
+                        delete window._direktorMinEffectiveWidth;
+                    }
                     print(`[Direktor Niri] Set custom width ratio for '${window.caption}' to ${newRatio.toFixed(2)}`);
                 }
             }
@@ -221,7 +226,7 @@ export class ScrollableNiriLayout extends LayoutEngine {
         if (!area || area.width === 0) return false;
 
         // Current assigned width ratio (or default)
-        let currentRatio = this.customWidths.get(window.internalId);
+        let currentRatio = this.customWidths.get(String(window.internalId));
         if (!currentRatio) {
             // Find total windows to calculate default ratio
             const allWindows = TileUtils.getWorkspaceWindows();
@@ -250,7 +255,7 @@ export class ScrollableNiriLayout extends LayoutEngine {
 
         newRatio = Math.max(0.1, Math.min(newRatio, 1.0));
         
-        this.customWidths.set(window.internalId, newRatio);
+        this.customWidths.set(String(window.internalId), newRatio);
         print(`[Direktor Niri] Keyboard resized '${window.caption}' to ${newRatio.toFixed(2)}`);
         return true;
     }

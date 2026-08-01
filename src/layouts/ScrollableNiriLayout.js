@@ -67,6 +67,11 @@ export class ScrollableNiriLayout extends LayoutEngine {
             if (w && w.minSize && typeof w.minSize.width === "number" && w.minSize.width > width) {
                 width = w.minSize.width;
             }
+            
+            // Issue #3 (Advanced): Respect actual settled widths from the Watchdog
+            if (w && typeof w._direktorMinEffectiveWidth === "number" && w._direktorMinEffectiveWidth > width) {
+                width = w._direktorMinEffectiveWidth;
+            }
             return width;
         });
 

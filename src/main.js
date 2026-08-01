@@ -557,6 +557,12 @@ DirektorEngine.prototype.tileWindow = function(window) {
                 if (fg.width !== tr.width || fg.height !== tr.height || fg.x !== tr.x || fg.y !== tr.y) {
                     window.frameGeometry = tr;
                     print(`[Direktor Watchdog] Applied final pixel-perfect nudge for '${window.caption}'`);
+                    
+                    // If it's a width discrepancy (likely terminal cell stepping), record it for the layout engine
+                    if (fg.width !== tr.width) {
+                        window._direktorMinEffectiveWidth = fg.width;
+                        self.kwinSetTimeout(() => self._retileWindowDesktops(window), 50);
+                    }
                 }
                 print(`[Direktor Watchdog] Geometry perfectly verified for '${window.caption}' after ${retries} retries.`);
                 resolved = true;
@@ -580,7 +586,12 @@ DirektorEngine.prototype.tileWindow = function(window) {
                 }
                 print(`[Direktor Watchdog ${Math.round((maxRetries * retryDelayMs)/1000)}s] App '${window.caption}' refused tiled dimensions (likely hit Wayland minimum size constraints). Accepting its overlapping geometry and leaving it in the tile grid.`);
                 if (typeof Logger !== "undefined") Logger.warn("Watchdog", `App '${window.caption}' refused tiled dimensions. Accepting overlap.`);
-                // We intentionally do NOT force it to floating anymore, as that ruins the layout for normal apps with rigid minimum sizes.
+                // Tell the layout engine exactly how wide this stubborn window is, so it can wrap the column perfectly
+                const fg = window.frameGeometry;
+                if (fg && tr && fg.width > tr.width) {
+                    window._direktorMinEffectiveWidth = fg.width;
+                    self._retileWindowDesktops(window);
+                }
             }
         };
 

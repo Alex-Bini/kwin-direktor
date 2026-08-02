@@ -50,9 +50,12 @@ export class ScrollableNiriLayout extends LayoutEngine {
         const widthThree = typeof gen.niriWidthThree === "number" ? gen.niriWidthThree / 100 : 0.4;
         const scrollMode = gen.niriScrollingMode || 0; // 0 = Niri, 1 = Karousel
 
-        // Dynamically fill empty space by resetting custom ratios if the window count changes
-        if (this.lastWindowCount !== undefined && this.lastWindowCount !== windows.length) {
-            this.customWidths.clear();
+        // Cleanup removed window IDs from the customWidths map without wiping the whole thing
+        const currentIds = new Set(windows.map(w => String(w.internalId)));
+        for (const key of this.customWidths.keys()) {
+            if (!currentIds.has(key)) {
+                this.customWidths.delete(key);
+            }
         }
         this.lastWindowCount = windows.length;
 
@@ -69,17 +72,35 @@ export class ScrollableNiriLayout extends LayoutEngine {
                 width = Math.floor(safeArea.width * widthThree);
             }
             
-            // Issue #3: Respect rigid minimum widths to prevent horizontal overlap
+            // Respect rigid minimum widths to prevent horizontal overlap
             if (w && w.minSize && typeof w.minSize.width === "number" && w.minSize.width > width) {
                 width = w.minSize.width;
             }
             
-            // Issue #3 (Advanced): Respect actual settled widths from the Watchdog
+            // Respect actual settled widths from the Watchdog
             if (w && typeof w._direktorMinEffectiveWidth === "number" && w._direktorMinEffectiveWidth > width) {
                 width = w._direktorMinEffectiveWidth;
             }
             return width;
         });
+
+        // Check if any window has a custom user-defined width
+        const hasCustomWidth = windows.some(w => this.customWidths.has(String(w.internalId)));
+
+        // Smart empty-space fill: if total column width is exactly equal to or less than the screen width,
+        // scale them proportionally so they fit perfectly alongside their layout gaps.
+        // We SKIP this if the user has manually resized a window (hasCustomWidth = true), 
+        // so we don't aggressively stretch a window right after the user intentionally shrank it.
+        if (windows.length > 0 && !hasCustomWidth) {
+            let totalWidth = colWidths.reduce((a, b) => a + b, 0);
+            let totalGaps = (windows.length - 1) * innerHoriz;
+            if (totalWidth + totalGaps !== safeArea.width && totalWidth <= safeArea.width) {
+                const scale = (safeArea.width - totalGaps) / totalWidth;
+                for (let i = 0; i < colWidths.length; i++) {
+                    colWidths[i] = Math.floor(colWidths[i] * scale);
+                }
+            }
+        }
 
         // Find the active window to ensure it stays in the viewport
         let activeIdx = 0;
@@ -135,13 +156,15 @@ export class ScrollableNiriLayout extends LayoutEngine {
             const w = colWidths[i];
             
             // True Niri/Karousel behavior: 100% vertical space per window
-            TileUtils.assignWindowRect(windows[i], {
+            const geom = {
                 x: currentX,
                 y: safeArea.y,
                 width: w,
                 height: safeArea.height,
                 allowOffscreenX: true
-            });
+            };
+            windows[i]._direktorNiriBox = geom;
+            TileUtils.assignWindowRect(windows[i], geom);
             
             currentX += w + innerHoriz;
         }
@@ -163,13 +186,18 @@ export class ScrollableNiriLayout extends LayoutEngine {
                 const target = windows[i];
                 if (target === window || !target.frameGeometry) continue;
 
-                const tx = target.frameGeometry.x;
-                const ty = target.frameGeometry.y;
-                const tw = target.frameGeometry.width;
-                const th = target.frameGeometry.height;
+                const box = target._direktorNiriBox || target.frameGeometry;
+                if (!box) continue;
+
+                const tx = box.x;
+                const ty = box.y;
+                const tw = box.width;
+                const th = box.height;
 
                 // If mouse drop coordinates are inside another window
                 if (centerX >= tx && centerX <= tx + tw && centerY >= ty && centerY <= ty + th) {
+                    if (this.engine && this.engine.sendOsdMessage) this.engine.sendOsdMessage(window, `Drop inside ${target.caption.substring(0, 6)}! Swapping...`);
+                    
                     if (this.engine && this.engine.registry) {
                         const entryA = this.engine.registry.getEntry(window);
                         const entryB = this.engine.registry.getEntry(target);
@@ -189,12 +217,14 @@ export class ScrollableNiriLayout extends LayoutEngine {
                             if (widthB !== undefined) this.customWidths.set(String(window.internalId), widthB);
                             else this.customWidths.delete(String(window.internalId));
 
-                            print(`[Direktor Niri] Swapped places and sizes between '${window.caption}' and '${target.caption}'`);
                             didSwap = true;
                         }
                     }
                     break;
                 }
+            }
+            if (!didSwap && this.engine && this.engine.sendOsdMessage) {
+                this.engine.sendOsdMessage(window, `Drop failed: No window at ${centerX}`);
             }
         }
 
@@ -207,6 +237,8 @@ export class ScrollableNiriLayout extends LayoutEngine {
                     ? Math.floor(area.width * this.customWidths.get(String(window.internalId)))
                     : (windows.length === 1 ? area.width : (windows.length === 2 ? Math.floor(area.width / 2) : Math.floor(area.width * 0.40)));
                 
+                if (this.engine && this.engine.sendOsdMessage) this.engine.sendOsdMessage(window, `Resize Check: Diff is ${Math.abs(geom.width - expectedW)}`);
+                
                 if (Math.abs(geom.width - expectedW) > 10) {
                     let newRatio = geom.width / area.width;
                     newRatio = Math.max(0.1, Math.min(newRatio, 1.0));
@@ -216,7 +248,7 @@ export class ScrollableNiriLayout extends LayoutEngine {
                     if (window._direktorMinEffectiveWidth) {
                         delete window._direktorMinEffectiveWidth;
                     }
-                    print(`[Direktor Niri] Set custom width ratio for '${window.caption}' to ${newRatio.toFixed(2)}`);
+                    if (this.engine && this.engine.sendOsdMessage) this.engine.sendOsdMessage(window, `Resize Applied: ${newRatio.toFixed(2)}`);
                 }
             }
         }

@@ -29,17 +29,6 @@ export class DwindleLayout extends LayoutEngine {
         super("dwindle", "Dwindle (Hyprland)");
         // Key: `${outputName}_${desktopId}` -> DwindleNode root
         this.trees = new Map();
-        this.dwindleConfig = {
-            preserveSplit: true,
-            forceSplit: 0,      // 0 = auto longest edge, 1 = always top/left, 2 = always bottom/right
-            smartSplit: false,
-            defaultSplitRatio: 1.0
-        };
-        this._loadDwindleConfig();
-    }
-
-    _loadDwindleConfig() {
-        // In Plasma 6 DeclarativeScript, external JSON config is handled via ConfigManager or KConfig
     }
 
     _getKey(output) {
@@ -145,16 +134,10 @@ export class DwindleLayout extends LayoutEngine {
         }
 
         const newNode = new DwindleNode(newWin);
-        this._loadDwindleConfig();
-        if (this.dwindleConfig.forceSplit === 1) {
-            newParent.splitTop = false; // Always split horizontally (left/right)
-        } else if (this.dwindleConfig.forceSplit === 2) {
-            newParent.splitTop = true;  // Always split vertically (top/bottom)
-        } else {
-            // Hyprland decision: if height > width, split vertically (top/bottom), else horizontally (left/right)
-            newParent.splitTop = (newParent.box.height > newParent.box.width);
-        }
-        newParent.splitRatio = (typeof this.dwindleConfig.defaultSplitRatio === "number" && this.dwindleConfig.defaultSplitRatio > 0.1) ? this.dwindleConfig.defaultSplitRatio : 1.0;
+        
+        // Hyprland decision: if height > width, split vertically (top/bottom), else horizontally (left/right)
+        newParent.splitTop = (newParent.box.height > newParent.box.width);
+        newParent.splitRatio = 1.0;
 
         newParent.children[0] = targetLeaf;
         newParent.children[1] = newNode;
@@ -165,19 +148,7 @@ export class DwindleLayout extends LayoutEngine {
         return root;
     }
 
-    toggleSplitDirection(window, output) {
-        if (!window || !output) return false;
-        const key = this._getKey(output);
-        const root = this.trees.get(key);
-        if (!root) return false;
-        const leaf = this._findLeafByWindow(root, window);
-        if (leaf && leaf.parent) {
-            leaf.parent.splitTop = !leaf.parent.splitTop;
-            this.applyLayout({ padding: 0 }, [], output);
-            return true;
-        }
-        return false;
-    }
+
 
     resizeWindow(window, dir, step, output) {
         if (!window || !output || !step) return false;
@@ -276,7 +247,7 @@ export class DwindleLayout extends LayoutEngine {
         if (this.engine && this.engine.configManager && typeof this.engine.configManager.getGapsForLayout === "function") {
             gaps = this.engine.configManager.getGapsForLayout(this.id);
         }
-        print(`[Direktor Dwindle] applyLayout: mode=${gen.gapMode} gaps=${JSON.stringify(gaps)}`);
+
 
         let root = this.trees.get(key) || null;
 

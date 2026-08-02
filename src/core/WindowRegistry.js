@@ -54,11 +54,7 @@ WindowRegistry.prototype.register = function(window, state = "tiled") {
                 layoutPosition: order
             };
             this.windows.set(window, entry);
-            if (typeof Logger !== "undefined") {
-                Logger.info("Registry", `Registered window: '${caption}' (${cls}) -> ${state.toUpperCase()} [absOrder: #${order}]`);
-            } else {
-                print(`[Direktor WindowRegistry] Registered new window: '${caption}' (class: ${cls}) -> state: ${state.toUpperCase()} [absOrder: #${order}]`);
-            }
+
         } else if (!entry.userOverridden) {
             entry.state = state;
             if (window.resourceClass || window.resourceName) {
@@ -79,11 +75,7 @@ WindowRegistry.prototype.unregister = function(window) {
         if (!window) return;
         const entry = this.windows.get(window);
         if (entry) {
-            if (typeof Logger !== "undefined") {
-                Logger.info("Registry", `Unregistered window: '${entry.caption || entry.resourceClass}'`);
-            } else {
-                print(`[Direktor WindowRegistry] Unregistered window: '${entry.caption || entry.resourceClass}'`);
-            }
+
             this.windows.delete(window);
         }
     }

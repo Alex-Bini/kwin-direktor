@@ -372,28 +372,43 @@ DirektorEngine.prototype.connectWindowSignals = function(window) {
 
         const onFinished = () => {
             if (self._isRetiling || self.isPaused) return;
-            const output = window.output || workspace.activeScreen || workspace.screens[0];
-            const surfaceId = TileUtils.computeSurfaceId(output, workspace.currentDesktop);
-            if (self.layoutManager.getActiveLayoutId(surfaceId) === "floating") return; // Disable snapback for All Floating layout
-            if (self.registry.getState(window) === "floating") return; // Disable snapback for explicitly floating windows
-            const allWin = TileUtils.getWorkspaceWindows();
-            const currentDesktop = workspace.currentDesktop;
-            const windows = [];
-            for (let i = 0; i < allWin.length; i++) {
-                const w = allWin[i];
-                if (w && w.normalWindow && !w.minimized && !self.closingWindows.has(w)) {
-                    const entry = self.registry.getEntry(w);
-                    const state = entry && entry.userOverridden ? entry.state : (self.ruleEngine.evaluateWindow(w) === "tile" ? "tiled" : "floating");
-                    if (state === "tiled") {
-                        const isOnScreen = TileUtils.isWindowOnScreen(w, output);
-                        const isOnDesktop = TileUtils.isWindowOnDesktop(w, currentDesktop);
-                        if (isOnScreen && isOnDesktop) windows.push(w);
+            
+            // Trailing debounce: wait until all KWin signals have finished firing to ensure we have the absolute final geometry
+            window._direktorOnFinishedEpoch = Date.now();
+            if (window._direktorOnFinishedTimer) return;
+            window._direktorOnFinishedTimer = true;
+            
+            self.kwinSetTimeout(() => {
+                window._direktorOnFinishedTimer = false;
+                // Double-check if a newer signal was fired while we were waiting
+                if (Date.now() - window._direktorOnFinishedEpoch < 40) {
+                    onFinished();
+                    return;
+                }
+                
+                const output = window.output || workspace.activeScreen || workspace.screens[0];
+                const surfaceId = TileUtils.computeSurfaceId(output, workspace.currentDesktop);
+                if (self.layoutManager.getActiveLayoutId(surfaceId) === "floating") return; // Disable snapback for All Floating layout
+                if (self.registry.getState(window) === "floating") return; // Disable snapback for explicitly floating windows
+                const allWin = TileUtils.getWorkspaceWindows();
+                const currentDesktop = workspace.currentDesktop;
+                const windows = [];
+                for (let i = 0; i < allWin.length; i++) {
+                    const w = allWin[i];
+                    if (w && w.normalWindow && !w.minimized && !self.closingWindows.has(w)) {
+                        const entry = self.registry.getEntry(w);
+                        const state = entry && entry.userOverridden ? entry.state : (self.ruleEngine.evaluateWindow(w) === "tile" ? "tiled" : "floating");
+                        if (state === "tiled") {
+                            const isOnScreen = TileUtils.isWindowOnScreen(w, output);
+                            const isOnDesktop = TileUtils.isWindowOnDesktop(w, currentDesktop);
+                            if (isOnScreen && isOnDesktop) windows.push(w);
+                        }
                     }
                 }
-            }
-            const sortedWin = self.registry.sortWindows(windows, true);
-            self.layoutManager.getActiveLayout(output).handleWindowInteractiveEvent(window, output, sortedWin, true);
-            self._retileWindowDesktops(window);
+                const sortedWin = self.registry.sortWindows(windows, true);
+                self.layoutManager.getActiveLayout(output).handleWindowInteractiveEvent(window, output, sortedWin, true);
+                self._retileWindowDesktops(window);
+            }, 50);
         };
 
         try { window.interactiveMoveResizeFinished.connect(onFinished); } catch (e) {}

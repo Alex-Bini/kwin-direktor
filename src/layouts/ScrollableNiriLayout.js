@@ -50,6 +50,12 @@ export class ScrollableNiriLayout extends LayoutEngine {
         const widthThree = typeof gen.niriWidthThree === "number" ? gen.niriWidthThree / 100 : 0.4;
         const scrollMode = gen.niriScrollingMode || 0; // 0 = Niri, 1 = Karousel
 
+        // Dynamically fill empty space by resetting custom ratios if the window count changes
+        if (this.lastWindowCount !== undefined && this.lastWindowCount !== windows.length) {
+            this.customWidths.clear();
+        }
+        this.lastWindowCount = windows.length;
+
         // Calculate custom and default widths for every window
         const colWidths = windows.map(w => {
             let width = 0;

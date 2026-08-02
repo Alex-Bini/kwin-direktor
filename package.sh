@@ -140,6 +140,11 @@ EOF
     systemctl --user enable --now direktor-osd.service 2>/dev/null || true
     systemctl --user restart direktor-osd.service 2>/dev/null || true
 
+    echo "[Direktor Packager] Launching Tray Applet..."
+    if ! pgrep -f "direktor_gui.py" > /dev/null; then
+        nohup bash -c "mkdir -p ~/.config/direktor && /usr/bin/python3 $(pwd)/src/ui/direktor_gui.py >> ~/.config/direktor/direktor-tray.log 2>&1" >/dev/null 2>&1 &
+    fi
+
     echo "[Direktor Packager] Upgrading installed package via kpackagetool6..."
     kpackagetool6 --type KWin/Script --upgrade "$OUTPUT_FILE" 2>/dev/null || kpackagetool6 --type KWin/Script --install "$OUTPUT_FILE"
     if [ "$1" = "--live-reload" ] || [ "$1" = "-r" ]; then

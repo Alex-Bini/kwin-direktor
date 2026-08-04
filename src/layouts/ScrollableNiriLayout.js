@@ -103,42 +103,42 @@ export class ScrollableNiriLayout extends LayoutEngine {
         }
 
         // Find the active window to ensure it stays in the viewport
-        let activeIdx = 0;
+        let activeIdx = -1;
         if (typeof workspace !== "undefined" && workspace.activeWindow) {
-            const idx = windows.indexOf(workspace.activeWindow);
-            if (idx !== -1) activeIdx = idx;
+            activeIdx = windows.indexOf(workspace.activeWindow);
         }
 
         // Current scroll offset (in terms of pixels)
         let currentScrollPx = this.scrollOffsets.get(stateKey) || 0;
 
-        // Calculate the absolute pixel bounds of the active window
-        let activeWinLeft = 0;
-        for (let i = 0; i < activeIdx; i++) {
-            activeWinLeft += colWidths[i] + innerHoriz; // Add gap between columns
-        }
-        const activeWinWidth = colWidths[activeIdx];
-        const activeWinRight = activeWinLeft + activeWinWidth;
-
-        // Auto-pan logic
-        let minX = 0;
-        let maxX = Math.max(0, safeArea.width - activeWinWidth);
-        
-        if (scrollMode === 0) { // Niri Style (Strict Center)
-            minX = Math.floor((safeArea.width - activeWinWidth) / 2);
-            maxX = minX;
-        } else { // Karousel Style (Center Pairs)
-            if (windows.length > 2) {
-                let defaultW = Math.floor(safeArea.width * widthThree);
-                minX = Math.floor((safeArea.width - activeWinWidth - defaultW - innerHoriz) / 2);
-                maxX = safeArea.width - activeWinWidth - minX;
+        if (activeIdx !== -1) {
+            // Calculate the absolute pixel bounds of the active window
+            let activeWinLeft = 0;
+            for (let i = 0; i < activeIdx; i++) {
+                activeWinLeft += colWidths[i] + innerHoriz; // Add gap between columns
             }
-        }
+            const activeWinWidth = colWidths[activeIdx];
 
-        if (activeWinLeft - currentScrollPx < minX) {
-            currentScrollPx = activeWinLeft - minX;
-        } else if (activeWinLeft - currentScrollPx > maxX) {
-            currentScrollPx = activeWinLeft - maxX;
+            // Auto-pan logic
+            let minX = 0;
+            let maxX = Math.max(0, safeArea.width - activeWinWidth);
+            
+            if (scrollMode === 0) { // Niri Style (Strict Center)
+                minX = Math.floor((safeArea.width - activeWinWidth) / 2);
+                maxX = minX;
+            } else { // Karousel Style (Center Pairs)
+                if (windows.length > 2) {
+                    let defaultW = Math.floor(safeArea.width * widthThree);
+                    minX = Math.floor((safeArea.width - activeWinWidth - defaultW - innerHoriz) / 2);
+                    maxX = safeArea.width - activeWinWidth - minX;
+                }
+            }
+
+            if (activeWinLeft - currentScrollPx < minX) {
+                currentScrollPx = activeWinLeft - minX;
+            } else if (activeWinLeft - currentScrollPx > maxX) {
+                currentScrollPx = activeWinLeft - maxX;
+            }
         }
 
         // Clamp the scroll offset so we don't pan out of bounds

@@ -35,7 +35,7 @@ Traditional tiling managers on KDE often fight the compositor, resulting in slug
 Direktor ships with a suite of dynamic tiling algorithms that seamlessly tile your windows.
 
 <div align="center">
-  <img src="assets/layouts/Direktor-Beta-Preview.mp4" alt="Switching Layouts" width="100%">
+  <img src="assets/layouts/Layouts.gif" alt="Switching Layouts" width="100%">
   <br>
   <i>Cycling through different layouts instantly using Meta + /</i>
 </div>
